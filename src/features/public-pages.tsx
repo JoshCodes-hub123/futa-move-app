@@ -1,38 +1,214 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Bike, GraduationCap, LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bike, Check, GraduationCap, LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { Brand } from "@/components/futamove/brand";
 import { TrustNote } from "@/components/futamove/primitives";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function PublicShell({ children, back }: { children: React.ReactNode; back?: string }) {
-  return <main className="min-h-screen bg-app-canvas px-4 py-6 sm:grid sm:place-items-center"><div className="mx-auto w-full max-w-md">{back ? <Link to={back} className="mb-8 inline-flex size-10 items-center justify-center rounded-full border border-border bg-background" aria-label="Go back"><ArrowLeft className="size-5" /></Link> : <Brand compact className="mb-10" />}{children}</div></main>;
+function PublicShell({ children, back, step }: { children: React.ReactNode; back?: string; step?: string }) {
+  return (
+    <main className="min-h-screen bg-background px-5 pb-12 pt-6 sm:grid sm:place-items-center sm:px-8">
+      <div className="mx-auto w-full max-w-sm sm:max-w-md">
+        <div className="mb-9 flex h-11 items-center justify-between">
+          {back ? (
+            <Link
+              to={back}
+              aria-label="Go back"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <ArrowLeft className="size-[18px]" strokeWidth={1.75} />
+            </Link>
+          ) : (
+            <Brand compact />
+          )}
+          {step && <span className="section-label">{step}</span>}
+        </div>
+        {children}
+      </div>
+    </main>
+  );
+}
+
+function PageIntro({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="mb-9">
+      <h1 className="display-title text-[2rem]">{title}</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
 }
 
 export function WelcomePage() {
-  return <main className="flex min-h-screen flex-col bg-dark-surface px-5 pb-8 pt-10 text-dark-foreground"><div className="mx-auto flex w-full max-w-md flex-1 flex-col"><Brand className="[&_p]:text-dark-foreground" /><div className="my-auto py-12"><p className="mb-4 text-sm font-semibold text-brand">FUTA campus mobility</p><h1 className="text-4xl font-black leading-tight sm:text-5xl">Where are you going?</h1><p className="mt-5 max-w-sm text-base leading-7 text-dark-muted">Find and share keke rides with verified FUTA students heading your way.</p></div><div className="space-y-3"><Button asChild size="lg" className="w-full"><Link to="/signup">Create student account <ArrowRight /></Link></Button><Button asChild size="lg" variant="dark-outline" className="w-full"><Link to="/login">I already have an account</Link></Button><p className="pt-3 text-center text-xs text-dark-muted">For verified FUTA students and campus riders.</p></div></div></main>;
+  return (
+    <main className="flex min-h-screen flex-col bg-dark-surface px-6 pb-10 pt-10 text-dark-foreground">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col sm:max-w-md">
+        <Brand className="[&_p]:text-dark-foreground" />
+
+        <div className="my-auto py-14">
+          <span className="inline-flex items-center rounded-full border border-dark-border px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-brand">
+            FUTA campus mobility
+          </span>
+          <h1 className="display-title mt-7 text-[2.75rem] sm:text-[3.25rem]">
+            Where are you<br />going?
+          </h1>
+          <p className="mt-6 max-w-xs text-[0.9375rem] leading-7 text-dark-muted">
+            Find and share keke rides with verified FUTA students heading your way.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <Button asChild size="lg" className="w-full">
+            <Link to="/signup">
+              Create student account <ArrowRight />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="dark-outline" className="w-full">
+            <Link to="/login">I already have an account</Link>
+          </Button>
+          <p className="pt-4 text-center text-xs text-dark-muted">For verified FUTA students and campus riders.</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function Field({
+  id,
+  label,
+  icon: Icon,
+  ...props
+}: { id: string; label: string; icon: typeof Mail } & React.ComponentProps<"input">) {
+  return (
+    <div>
+      <Label htmlFor={id} className="text-[0.8125rem] font-medium">{label}</Label>
+      <div className="relative mt-2">
+        <Icon className="field-icon" strokeWidth={1.75} />
+        <Input id={id} className="pl-11" {...props} />
+      </div>
+    </div>
+  );
 }
 
 function AuthFields({ signup = false }: { signup?: boolean }) {
-  return <div className="space-y-4">{signup && <div><Label htmlFor="name">Full name</Label><div className="relative mt-2"><UserRound className="field-icon" /><Input id="name" placeholder="Your full name" className="pl-11" /></div></div>}<div><Label htmlFor="email">FUTA email</Label><div className="relative mt-2"><Mail className="field-icon" /><Input id="email" type="email" placeholder="name@futa.edu.ng" className="pl-11" /></div></div><div><Label htmlFor="password">Password</Label><div className="relative mt-2"><LockKeyhole className="field-icon" /><Input id="password" type="password" placeholder="At least 8 characters" className="pl-11" /></div></div></div>;
+  return (
+    <div className="space-y-5">
+      {signup && <Field id="name" label="Full name" icon={UserRound} placeholder="Your full name" />}
+      <Field id="email" label="FUTA email" icon={Mail} type="email" placeholder="name@futa.edu.ng" />
+      <Field id="password" label="Password" icon={LockKeyhole} type="password" placeholder="At least 8 characters" />
+    </div>
+  );
 }
 
 export function LoginPage() {
-  return <PublicShell back="/"><h1 className="text-3xl font-bold">Welcome back</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Sign in to continue moving around FUTA.</p><Card className="mt-8"><CardContent className="space-y-6 p-5"><AuthFields /><Button asChild size="lg" className="w-full"><Link to="/student/home">Sign in</Link></Button></CardContent></Card><p className="mt-6 text-center text-sm text-muted-foreground">New to FUTAMOVE? <Link to="/signup" className="font-semibold text-foreground">Create account</Link></p></PublicShell>;
+  return (
+    <PublicShell back="/">
+      <PageIntro title="Welcome back" description="Sign in to continue moving around FUTA." />
+      <AuthFields />
+      <Button asChild size="lg" className="mt-8 w-full">
+        <Link to="/student/home">Sign in</Link>
+      </Button>
+      <p className="mt-7 text-center text-sm text-muted-foreground">
+        New to FUTAMOVE?{" "}
+        <Link to="/signup" className="font-semibold text-foreground underline-offset-4 hover:underline">
+          Create account
+        </Link>
+      </p>
+    </PublicShell>
+  );
 }
 
 export function SignupPage() {
-  return <PublicShell back="/"><h1 className="text-3xl font-bold">Join FUTAMOVE</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Use your student details to get started.</p><Card className="mt-8"><CardContent className="space-y-6 p-5"><AuthFields signup /><Button asChild size="lg" className="w-full"><Link to="/account-type">Continue</Link></Button><TrustNote>Your account will be verified before you can join rides.</TrustNote></CardContent></Card><p className="mt-6 text-center text-sm text-muted-foreground">Already have an account? <Link to="/login" className="font-semibold text-foreground">Sign in</Link></p></PublicShell>;
+  return (
+    <PublicShell back="/" step="Step 1 of 3">
+      <PageIntro title="Join FUTAMOVE" description="Use your student details to get started." />
+      <AuthFields signup />
+      <Button asChild size="lg" className="mt-8 w-full">
+        <Link to="/account-type">Continue</Link>
+      </Button>
+      <div className="mt-6">
+        <TrustNote>Your account will be verified before you can join rides.</TrustNote>
+      </div>
+      <p className="mt-7 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link to="/login" className="font-semibold text-foreground underline-offset-4 hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </PublicShell>
+  );
 }
 
 export function AccountTypePage() {
   const [selected, setSelected] = useState<"student" | "rider">("student");
-  return <PublicShell back="/signup"><h1 className="text-3xl font-bold">How will you move?</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Choose your primary account type. You can complete setup next.</p><div className="mt-8 grid gap-3"><Button variant="outline" type="button" onClick={() => setSelected("student")} className={`selection-card ${selected === "student" ? "selection-card-active" : ""}`}><GraduationCap className="size-6" /><span><strong>Student</strong><small>Find and share rides around FUTA</small></span></Button><Button variant="outline" type="button" onClick={() => setSelected("rider")} className={`selection-card ${selected === "rider" ? "selection-card-active" : ""}`}><Bike className="size-6" /><span><strong>Rider</strong><small>Receive requests and manage trips</small></span></Button></div><Button asChild size="lg" className="mt-8 w-full"><Link to="/verification">Continue <ArrowRight /></Link></Button></PublicShell>;
+  const options = [
+    { key: "student", icon: GraduationCap, title: "Student", detail: "Find and share rides around FUTA" },
+    { key: "rider", icon: Bike, title: "Rider", detail: "Receive requests and manage trips" },
+  ] as const;
+
+  return (
+    <PublicShell back="/signup" step="Step 2 of 3">
+      <PageIntro title="How will you move?" description="Choose your primary account type. You can complete setup next." />
+      <div className="grid gap-3">
+        {options.map(({ key, icon: Icon, title, detail }) => {
+          const active = selected === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setSelected(key)}
+              className={`selection-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${active ? "selection-card-active" : "hover:bg-muted/50"}`}
+            >
+              <span className="grid size-10 place-items-center rounded-full bg-muted">
+                <Icon className="size-5" strokeWidth={1.75} />
+              </span>
+              <span>
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </span>
+              <span
+                className={`grid size-5 place-items-center rounded-full border transition-colors ${active ? "border-brand bg-brand text-primary-foreground" : "border-border"}`}
+              >
+                {active && <Check className="size-3" strokeWidth={3} />}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <Button asChild size="lg" className="mt-8 w-full">
+        <Link to="/verification">
+          Continue <ArrowRight />
+        </Link>
+      </Button>
+    </PublicShell>
+  );
 }
 
 export function VerificationPage() {
-  return <PublicShell back="/account-type"><div className="grid size-14 place-items-center rounded-full bg-primary"><ShieldCheck className="size-7" /></div><h1 className="mt-6 text-3xl font-bold">Verify your FUTA identity</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">This helps everyone ride with greater confidence.</p><Card className="mt-8"><CardContent className="space-y-5 p-5"><div><Label htmlFor="matric">Matric number</Label><Input id="matric" placeholder="e.g. MEE/20/0000" className="mt-2" /></div><div><Label htmlFor="faculty">Faculty</Label><Input id="faculty" placeholder="Your faculty" className="mt-2" /></div><Button asChild size="lg" className="w-full"><Link to="/student/home">Submit for verification</Link></Button></CardContent></Card></PublicShell>;
+  return (
+    <PublicShell back="/account-type" step="Step 3 of 3">
+      <div className="mb-7 grid size-12 place-items-center rounded-full bg-brand/15 text-brand-strong">
+        <ShieldCheck className="size-6" strokeWidth={1.75} />
+      </div>
+      <PageIntro title="Verify your FUTA identity" description="This helps everyone ride with greater confidence." />
+      <div className="space-y-5">
+        <div>
+          <Label htmlFor="matric" className="text-[0.8125rem] font-medium">Matric number</Label>
+          <Input id="matric" placeholder="e.g. MEE/20/0000" className="mt-2" />
+        </div>
+        <div>
+          <Label htmlFor="faculty" className="text-[0.8125rem] font-medium">Faculty</Label>
+          <Input id="faculty" placeholder="Your faculty" className="mt-2" />
+        </div>
+      </div>
+      <Button asChild size="lg" className="mt-8 w-full">
+        <Link to="/student/home">Submit for verification</Link>
+      </Button>
+      <div className="mt-6">
+        <TrustNote>Verification usually takes a short while after submission.</TrustNote>
+      </div>
+    </PublicShell>
+  );
 }

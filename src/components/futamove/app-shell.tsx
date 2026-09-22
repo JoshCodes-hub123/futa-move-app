@@ -23,23 +23,55 @@ const nav = {
 export function AppShell({ role, children }: { role: Role; children: React.ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   return (
-    <div className="min-h-screen bg-app-canvas">
+    <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-background px-5 py-7 lg:flex lg:flex-col">
         <Brand compact />
         <nav className="mt-10 space-y-1">
           {nav[role].map(({ label, to, icon: Icon }) => {
             const active = pathname === to;
-            return <Link key={to} to={to} className={cn("flex h-12 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors", active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><Icon className="size-5" /><span>{label}</span></Link>;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={cn(
+                  "flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
+                  active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                )}
+              >
+                <Icon className="size-[18px]" strokeWidth={active ? 2.25 : 1.75} />
+                <span>{label}</span>
+                {active && <span className="ml-auto size-1.5 rounded-full bg-brand" />}
+              </Link>
+            );
           })}
         </nav>
         <p className="mt-auto text-xs leading-5 text-muted-foreground">Built for verified FUTA students.</p>
       </aside>
-      <main className="mx-auto min-h-screen w-full max-w-app bg-background px-4 pb-28 pt-6 sm:px-6 lg:ml-64 lg:max-w-3xl lg:px-10 lg:pb-10 lg:pt-9">{children}</main>
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-safe backdrop-blur lg:hidden">
-        <div className={cn("mx-auto grid h-18 max-w-app items-center px-2", role === "rider" ? "grid-cols-5" : "grid-cols-4")}>
+
+      <main className="mx-auto min-h-screen w-full max-w-app bg-background px-5 pb-28 pt-7 sm:px-8 lg:ml-64 lg:max-w-2xl lg:px-10 lg:pb-16 lg:pt-12">
+        {children}
+      </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-safe backdrop-blur-xl lg:hidden">
+        <div className={cn("mx-auto grid h-16 max-w-app items-center px-2 sm:px-6", role === "rider" ? "grid-cols-5" : "grid-cols-4")}>
           {nav[role].map(({ label, to, icon: Icon }) => {
             const active = pathname === to;
-            return <Link key={to} to={to} aria-label={label} className={cn("flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors", active ? "text-foreground" : "text-muted-foreground")}><span className={cn("grid size-8 place-items-center rounded-full", active && "bg-primary")}><Icon className="size-5" /></span><span className="truncate">{label}</span></Link>;
+            return (
+              <Link
+                key={to}
+                to={to}
+                aria-label={label}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative flex h-full min-w-0 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors duration-150",
+                  active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brand" />}
+                <Icon className="size-[20px]" strokeWidth={active ? 2.25 : 1.75} />
+                <span className="truncate">{label}</span>
+              </Link>
+            );
           })}
         </div>
       </nav>
