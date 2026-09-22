@@ -32,8 +32,6 @@ import { recentRide, upcomingRide } from "@/services/mock-data";
 
 export function StudentHomePage() {
   const [open, setOpen] = useState(false);
-  const [online] = useState(false);
-  void online;
 
   return (
     <AppShell role="student">

@@ -7,7 +7,7 @@ export function Brand({ compact = false, className }: { compact?: boolean; class
       <img
         src={logo.url}
         alt="FUTAMOVE"
-        className={cn("shrink-0 rounded-full object-cover", compact ? "size-10" : "size-16")}
+        className={cn("shrink-0 object-contain", compact ? "size-9" : "size-14")}
       />
       <div className="min-w-0">
         <p className={cn("font-black leading-none text-foreground", compact ? "text-lg" : "text-2xl")}>
