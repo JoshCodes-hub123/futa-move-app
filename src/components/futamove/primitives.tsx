@@ -62,5 +62,5 @@ export function RowLink({ icon: Icon, title, description, onClick }: { icon: Luc
 }
 
 export function FeaturePlaceholder({ title, description, icon }: { title: string; description: string; icon?: LucideIcon }) {
-  return <Card className={cn("mt-6 overflow-hidden")}><EmptyState title={title} description={description} icon={icon} /></Card>;
+  return <Card className={cn("mt-6 overflow-hidden")}><EmptyState title={title} description={description} {...(icon ? { icon } : {})} /></Card>;
 }
