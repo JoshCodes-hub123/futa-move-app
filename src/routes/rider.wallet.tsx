@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { RiderPlaceholderPage } from "@/features/app-pages";
+export const Route = createFileRoute("/rider/wallet")({ head: () => ({ meta: [{ title: "Rider wallet — FUTAMOVE" }, { name: "description", content: "View the FUTAMOVE wallet foundation." }, { property: "og:title", content: "Rider wallet — FUTAMOVE" }, { property: "og:description", content: "View the FUTAMOVE wallet foundation." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RiderPlaceholderPage type="wallet" /> });
