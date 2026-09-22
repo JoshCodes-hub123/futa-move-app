@@ -80,8 +80,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "FUTAMOVE" },
       { name: "description", content: "Student-focused campus mobility for FUTA." },
       { name: "author", content: "FUTAMOVE" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {

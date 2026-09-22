@@ -10,33 +10,206 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountTypeRouteImport } from './routes/account-type'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VerificationRouteImport } from './routes/verification'
+import { Route as RiderHomeRouteImport } from './routes/rider.home'
+import { Route as RiderProfileRouteImport } from './routes/rider.profile'
+import { Route as RiderRequestsRouteImport } from './routes/rider.requests'
+import { Route as RiderTripsRouteImport } from './routes/rider.trips'
+import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
+import { Route as StudentActivityRouteImport } from './routes/student.activity'
+import { Route as StudentHomeRouteImport } from './routes/student.home'
+import { Route as StudentProfileRouteImport } from './routes/student.profile'
+import { Route as StudentRidesRouteImport } from './routes/student.rides'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountTypeRoute = AccountTypeRouteImport.update({
+  id: '/account-type',
+  path: '/account-type',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerificationRoute = VerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderHomeRoute = RiderHomeRouteImport.update({
+  id: '/rider/home',
+  path: '/rider/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderProfileRoute = RiderProfileRouteImport.update({
+  id: '/rider/profile',
+  path: '/rider/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderRequestsRoute = RiderRequestsRouteImport.update({
+  id: '/rider/requests',
+  path: '/rider/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderTripsRoute = RiderTripsRouteImport.update({
+  id: '/rider/trips',
+  path: '/rider/trips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderWalletRoute = RiderWalletRouteImport.update({
+  id: '/rider/wallet',
+  path: '/rider/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentActivityRoute = StudentActivityRouteImport.update({
+  id: '/student/activity',
+  path: '/student/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentHomeRoute = StudentHomeRouteImport.update({
+  id: '/student/home',
+  path: '/student/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentProfileRoute = StudentProfileRouteImport.update({
+  id: '/student/profile',
+  path: '/student/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRidesRoute = StudentRidesRouteImport.update({
+  id: '/student/rides',
+  path: '/student/rides',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account-type': typeof AccountTypeRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
+  '/rider/home': typeof RiderHomeRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/rider/requests': typeof RiderRequestsRoute
+  '/rider/trips': typeof RiderTripsRoute
+  '/rider/wallet': typeof RiderWalletRoute
+  '/student/activity': typeof StudentActivityRoute
+  '/student/home': typeof StudentHomeRoute
+  '/student/profile': typeof StudentProfileRoute
+  '/student/rides': typeof StudentRidesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account-type': typeof AccountTypeRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
+  '/rider/home': typeof RiderHomeRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/rider/requests': typeof RiderRequestsRoute
+  '/rider/trips': typeof RiderTripsRoute
+  '/rider/wallet': typeof RiderWalletRoute
+  '/student/activity': typeof StudentActivityRoute
+  '/student/home': typeof StudentHomeRoute
+  '/student/profile': typeof StudentProfileRoute
+  '/student/rides': typeof StudentRidesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account-type': typeof AccountTypeRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/verification': typeof VerificationRoute
+  '/rider/home': typeof RiderHomeRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/rider/requests': typeof RiderRequestsRoute
+  '/rider/trips': typeof RiderTripsRoute
+  '/rider/wallet': typeof RiderWalletRoute
+  '/student/activity': typeof StudentActivityRoute
+  '/student/home': typeof StudentHomeRoute
+  '/student/profile': typeof StudentProfileRoute
+  '/student/rides': typeof StudentRidesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/account-type'
+    | '/login'
+    | '/signup'
+    | '/verification'
+    | '/rider/home'
+    | '/rider/profile'
+    | '/rider/requests'
+    | '/rider/trips'
+    | '/rider/wallet'
+    | '/student/activity'
+    | '/student/home'
+    | '/student/profile'
+    | '/student/rides'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/account-type'
+    | '/login'
+    | '/signup'
+    | '/verification'
+    | '/rider/home'
+    | '/rider/profile'
+    | '/rider/requests'
+    | '/rider/trips'
+    | '/rider/wallet'
+    | '/student/activity'
+    | '/student/home'
+    | '/student/profile'
+    | '/student/rides'
+  id:
+    | '__root__'
+    | '/'
+    | '/account-type'
+    | '/login'
+    | '/signup'
+    | '/verification'
+    | '/rider/home'
+    | '/rider/profile'
+    | '/rider/requests'
+    | '/rider/trips'
+    | '/rider/wallet'
+    | '/student/activity'
+    | '/student/home'
+    | '/student/profile'
+    | '/student/rides'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountTypeRoute: typeof AccountTypeRoute
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
+  VerificationRoute: typeof VerificationRoute
+  RiderHomeRoute: typeof RiderHomeRoute
+  RiderProfileRoute: typeof RiderProfileRoute
+  RiderRequestsRoute: typeof RiderRequestsRoute
+  RiderTripsRoute: typeof RiderTripsRoute
+  RiderWalletRoute: typeof RiderWalletRoute
+  StudentActivityRoute: typeof StudentActivityRoute
+  StudentHomeRoute: typeof StudentHomeRoute
+  StudentProfileRoute: typeof StudentProfileRoute
+  StudentRidesRoute: typeof StudentRidesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +221,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account-type': {
+      id: '/account-type'
+      path: '/account-type'
+      fullPath: '/account-type'
+      preLoaderRoute: typeof AccountTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verification': {
+      id: '/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof VerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/home': {
+      id: '/rider/home'
+      path: '/rider/home'
+      fullPath: '/rider/home'
+      preLoaderRoute: typeof RiderHomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/profile': {
+      id: '/rider/profile'
+      path: '/rider/profile'
+      fullPath: '/rider/profile'
+      preLoaderRoute: typeof RiderProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/requests': {
+      id: '/rider/requests'
+      path: '/rider/requests'
+      fullPath: '/rider/requests'
+      preLoaderRoute: typeof RiderRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/trips': {
+      id: '/rider/trips'
+      path: '/rider/trips'
+      fullPath: '/rider/trips'
+      preLoaderRoute: typeof RiderTripsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/wallet': {
+      id: '/rider/wallet'
+      path: '/rider/wallet'
+      fullPath: '/rider/wallet'
+      preLoaderRoute: typeof RiderWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/activity': {
+      id: '/student/activity'
+      path: '/student/activity'
+      fullPath: '/student/activity'
+      preLoaderRoute: typeof StudentActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/home': {
+      id: '/student/home'
+      path: '/student/home'
+      fullPath: '/student/home'
+      preLoaderRoute: typeof StudentHomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/profile': {
+      id: '/student/profile'
+      path: '/student/profile'
+      fullPath: '/student/profile'
+      preLoaderRoute: typeof StudentProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/rides': {
+      id: '/student/rides'
+      path: '/student/rides'
+      fullPath: '/student/rides'
+      preLoaderRoute: typeof StudentRidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountTypeRoute: AccountTypeRoute,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
+  VerificationRoute: VerificationRoute,
+  RiderHomeRoute: RiderHomeRoute,
+  RiderProfileRoute: RiderProfileRoute,
+  RiderRequestsRoute: RiderRequestsRoute,
+  RiderTripsRoute: RiderTripsRoute,
+  RiderWalletRoute: RiderWalletRoute,
+  StudentActivityRoute: StudentActivityRoute,
+  StudentHomeRoute: StudentHomeRoute,
+  StudentProfileRoute: StudentProfileRoute,
+  StudentRidesRoute: StudentRidesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -47,7 +47,7 @@ const riderPlaceholders = {
 
 export function RiderPlaceholderPage({ type }: { type: keyof typeof riderPlaceholders }) {
   const item = riderPlaceholders[type];
-  return <AppShell role="rider"><ScreenHeader title={type[0].toUpperCase() + type.slice(1)} /><FeaturePlaceholder {...item} /></AppShell>;
+  return <AppShell role="rider"><ScreenHeader title={type.charAt(0).toUpperCase() + type.slice(1)} /><FeaturePlaceholder {...item} /></AppShell>;
 }
 
 export function RiderProfilePage() {
