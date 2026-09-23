@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AccountTypeRouteImport } from './routes/account-type'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -27,6 +28,10 @@ import { Route as AuthenticatedStudentRidesIndexRouteImport } from './routes/_au
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountTypeRoute = AccountTypeRouteImport.update({
@@ -76,27 +81,27 @@ const RiderWalletRoute = RiderWalletRouteImport.update({
 } as any)
 const AuthenticatedStudentActivityRoute =
   AuthenticatedStudentActivityRouteImport.update({
-    id: '/_authenticated/student/activity',
+    id: '/student/activity',
     path: '/student/activity',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedStudentHomeRoute =
   AuthenticatedStudentHomeRouteImport.update({
-    id: '/_authenticated/student/home',
+    id: '/student/home',
     path: '/student/home',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedStudentProfileRoute =
   AuthenticatedStudentProfileRouteImport.update({
-    id: '/_authenticated/student/profile',
+    id: '/student/profile',
     path: '/student/profile',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedStudentRidesIndexRoute =
   AuthenticatedStudentRidesIndexRouteImport.update({
-    id: '/_authenticated/student/rides/',
+    id: '/student/rides/',
     path: '/student/rides/',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -134,6 +139,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/account-type': typeof AccountTypeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -184,6 +190,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/account-type'
     | '/login'
     | '/signup'
@@ -201,6 +208,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccountTypeRoute: typeof AccountTypeRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
@@ -210,10 +218,6 @@ export interface RootRouteChildren {
   RiderRequestsRoute: typeof RiderRequestsRoute
   RiderTripsRoute: typeof RiderTripsRoute
   RiderWalletRoute: typeof RiderWalletRoute
-  AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
-  AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
-  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
-  AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account-type': {
@@ -293,34 +304,52 @@ declare module '@tanstack/react-router' {
       path: '/student/activity'
       fullPath: '/student/activity'
       preLoaderRoute: typeof AuthenticatedStudentActivityRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/student/home': {
       id: '/_authenticated/student/home'
       path: '/student/home'
       fullPath: '/student/home'
       preLoaderRoute: typeof AuthenticatedStudentHomeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/student/profile': {
       id: '/_authenticated/student/profile'
       path: '/student/profile'
       fullPath: '/student/profile'
       preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/student/rides/': {
       id: '/_authenticated/student/rides/'
       path: '/student/rides'
       fullPath: '/student/rides/'
       preLoaderRoute: typeof AuthenticatedStudentRidesIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
+  AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
+  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
+  AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
+  AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
+  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
+  AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccountTypeRoute: AccountTypeRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
@@ -330,10 +359,6 @@ const rootRouteChildren: RootRouteChildren = {
   RiderRequestsRoute: RiderRequestsRoute,
   RiderTripsRoute: RiderTripsRoute,
   RiderWalletRoute: RiderWalletRoute,
-  AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
-  AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
-  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
-  AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
