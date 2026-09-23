@@ -10,7 +10,7 @@ import { recentRide, upcomingRide } from "@/services/mock-data";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
-function displayName(email?: string | null, metadata?: Record<string, unknown>) { const name = metadata?.full_name; return typeof name === "string" && name.trim() ? name.trim() : email?.split("@")[0] || "Student"; }
+function displayName(email?: string | null, metadata?: Record<string, unknown>) { const name = metadata?.["full_name"]; return typeof name === "string" && name.trim() ? name.trim() : email?.split("@")[0] || "Student"; }
 
 export function StudentHomePage() {
   const navigate = useNavigate(); const { user } = useAuth();
