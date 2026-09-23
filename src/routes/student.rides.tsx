@@ -1,3 +1,0 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { StudentPlaceholderPage } from "@/features/app-pages";
-export const Route = createFileRoute("/student/rides")({ head: () => ({ meta: [{ title: "Your rides — FUTAMOVE" }, { name: "description", content: "View your FUTAMOVE ride history and upcoming rides." }, { property: "og:title", content: "Your rides — FUTAMOVE" }, { property: "og:description", content: "View your FUTAMOVE ride history and upcoming rides." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <StudentPlaceholderPage type="rides" /> });

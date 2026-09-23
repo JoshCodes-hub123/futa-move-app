@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { StudentHomePage } from "@/features/app-pages";
+export const Route = createFileRoute("/_authenticated/student/home")({ head: () => ({ meta: [{ title: "Student home — FUTAMOVE" }, { name: "description", content: "Plan a shared campus ride from your current location." }, { property: "og:title", content: "Student home — FUTAMOVE" }, { property: "og:description", content: "Plan a shared campus ride from your current location." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: StudentHomePage });
