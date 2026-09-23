@@ -83,7 +83,11 @@ export function StudentRidesPage() {
       {!isLoading && !isError && (
         <>
           <section className="mt-9">
-            <SectionHeading {...(active.length ? {} : { detail: "None" })} title="Active request" />
+            {active.length ? (
+              <SectionHeading title="Active request" />
+            ) : (
+              <SectionHeading title="Active request" detail="None" />
+            )}
             {active.length ? (
               <div className="mt-2 divider-list">
                 {active.map((request) => (
