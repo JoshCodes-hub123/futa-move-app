@@ -19,10 +19,10 @@ import { Route as RiderProfileRouteImport } from './routes/rider.profile'
 import { Route as RiderRequestsRouteImport } from './routes/rider.requests'
 import { Route as RiderTripsRouteImport } from './routes/rider.trips'
 import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
-import { Route as StudentActivityRouteImport } from './routes/student.activity'
-import { Route as StudentHomeRouteImport } from './routes/student.home'
-import { Route as StudentProfileRouteImport } from './routes/student.profile'
-import { Route as StudentRidesRouteImport } from './routes/student.rides'
+import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
+import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
+import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student.profile'
+import { Route as AuthenticatedStudentRidesIndexRouteImport } from './routes/_authenticated/student.rides.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,26 +74,30 @@ const RiderWalletRoute = RiderWalletRouteImport.update({
   path: '/rider/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StudentActivityRoute = StudentActivityRouteImport.update({
-  id: '/student/activity',
-  path: '/student/activity',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentHomeRoute = StudentHomeRouteImport.update({
-  id: '/student/home',
-  path: '/student/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentProfileRoute = StudentProfileRouteImport.update({
-  id: '/student/profile',
-  path: '/student/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentRidesRoute = StudentRidesRouteImport.update({
-  id: '/student/rides',
-  path: '/student/rides',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedStudentActivityRoute =
+  AuthenticatedStudentActivityRouteImport.update({
+    id: '/_authenticated/student/activity',
+    path: '/student/activity',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedStudentHomeRoute =
+  AuthenticatedStudentHomeRouteImport.update({
+    id: '/_authenticated/student/home',
+    path: '/student/home',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedStudentProfileRoute =
+  AuthenticatedStudentProfileRouteImport.update({
+    id: '/_authenticated/student/profile',
+    path: '/student/profile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedStudentRidesIndexRoute =
+  AuthenticatedStudentRidesIndexRouteImport.update({
+    id: '/_authenticated/student/rides/',
+    path: '/student/rides/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,10 +110,10 @@ export interface FileRoutesByFullPath {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
-  '/student/activity': typeof StudentActivityRoute
-  '/student/home': typeof StudentHomeRoute
-  '/student/profile': typeof StudentProfileRoute
-  '/student/rides': typeof StudentRidesRoute
+  '/student/activity': typeof AuthenticatedStudentActivityRoute
+  '/student/home': typeof AuthenticatedStudentHomeRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -122,10 +126,10 @@ export interface FileRoutesByTo {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
-  '/student/activity': typeof StudentActivityRoute
-  '/student/home': typeof StudentHomeRoute
-  '/student/profile': typeof StudentProfileRoute
-  '/student/rides': typeof StudentRidesRoute
+  '/student/activity': typeof AuthenticatedStudentActivityRoute
+  '/student/home': typeof AuthenticatedStudentHomeRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/student/rides': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,10 +143,10 @@ export interface FileRoutesById {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
-  '/student/activity': typeof StudentActivityRoute
-  '/student/home': typeof StudentHomeRoute
-  '/student/profile': typeof StudentProfileRoute
-  '/student/rides': typeof StudentRidesRoute
+  '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
+  '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
+  '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/_authenticated/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,7 +164,7 @@ export interface FileRouteTypes {
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
-    | '/student/rides'
+    | '/student/rides/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -189,10 +193,10 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
-    | '/student/activity'
-    | '/student/home'
-    | '/student/profile'
-    | '/student/rides'
+    | '/_authenticated/student/activity'
+    | '/_authenticated/student/home'
+    | '/_authenticated/student/profile'
+    | '/_authenticated/student/rides/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,10 +210,10 @@ export interface RootRouteChildren {
   RiderRequestsRoute: typeof RiderRequestsRoute
   RiderTripsRoute: typeof RiderTripsRoute
   RiderWalletRoute: typeof RiderWalletRoute
-  StudentActivityRoute: typeof StudentActivityRoute
-  StudentHomeRoute: typeof StudentHomeRoute
-  StudentProfileRoute: typeof StudentProfileRoute
-  StudentRidesRoute: typeof StudentRidesRoute
+  AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
+  AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
+  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
+  AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -284,32 +288,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RiderWalletRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/student/activity': {
-      id: '/student/activity'
+    '/_authenticated/student/activity': {
+      id: '/_authenticated/student/activity'
       path: '/student/activity'
       fullPath: '/student/activity'
-      preLoaderRoute: typeof StudentActivityRouteImport
+      preLoaderRoute: typeof AuthenticatedStudentActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/student/home': {
-      id: '/student/home'
+    '/_authenticated/student/home': {
+      id: '/_authenticated/student/home'
       path: '/student/home'
       fullPath: '/student/home'
-      preLoaderRoute: typeof StudentHomeRouteImport
+      preLoaderRoute: typeof AuthenticatedStudentHomeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/student/profile': {
-      id: '/student/profile'
+    '/_authenticated/student/profile': {
+      id: '/_authenticated/student/profile'
       path: '/student/profile'
       fullPath: '/student/profile'
-      preLoaderRoute: typeof StudentProfileRouteImport
+      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/student/rides': {
-      id: '/student/rides'
+    '/_authenticated/student/rides/': {
+      id: '/_authenticated/student/rides/'
       path: '/student/rides'
-      fullPath: '/student/rides'
-      preLoaderRoute: typeof StudentRidesRouteImport
+      fullPath: '/student/rides/'
+      preLoaderRoute: typeof AuthenticatedStudentRidesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -326,10 +330,10 @@ const rootRouteChildren: RootRouteChildren = {
   RiderRequestsRoute: RiderRequestsRoute,
   RiderTripsRoute: RiderTripsRoute,
   RiderWalletRoute: RiderWalletRoute,
-  StudentActivityRoute: StudentActivityRoute,
-  StudentHomeRoute: StudentHomeRoute,
-  StudentProfileRoute: StudentProfileRoute,
-  StudentRidesRoute: StudentRidesRoute,
+  AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
+  AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
+  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
+  AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
