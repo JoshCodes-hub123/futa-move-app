@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ride_requests: {
+        Row: {
+          created_at: string
+          departure_time: string
+          destination_latitude: number | null
+          destination_longitude: number | null
+          destination_text: string
+          id: string
+          origin_latitude: number | null
+          origin_longitude: number | null
+          origin_text: string
+          status: Database["public"]["Enums"]["ride_request_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          departure_time: string
+          destination_latitude?: number | null
+          destination_longitude?: number | null
+          destination_text: string
+          id?: string
+          origin_latitude?: number | null
+          origin_longitude?: number | null
+          origin_text: string
+          status?: Database["public"]["Enums"]["ride_request_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          departure_time?: string
+          destination_latitude?: number | null
+          destination_longitude?: number | null
+          destination_text?: string
+          id?: string
+          origin_latitude?: number | null
+          origin_longitude?: number | null
+          origin_text?: string
+          status?: Database["public"]["Enums"]["ride_request_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +67,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      ride_request_status: "draft" | "searching" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +194,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ride_request_status: ["draft", "searching", "cancelled"],
+    },
   },
 } as const
