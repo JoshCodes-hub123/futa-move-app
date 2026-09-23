@@ -23,7 +23,9 @@ import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
 import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
 import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student.profile'
+import { Route as AuthenticatedStudentRequestRouteImport } from './routes/_authenticated/student.request'
 import { Route as AuthenticatedStudentRidesIndexRouteImport } from './routes/_authenticated/student.rides.index'
+import { Route as AuthenticatedStudentRidesIdRouteImport } from './routes/_authenticated/student.rides.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,10 +99,22 @@ const AuthenticatedStudentProfileRoute =
     path: '/student/profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStudentRequestRoute =
+  AuthenticatedStudentRequestRouteImport.update({
+    id: '/student/request',
+    path: '/student/request',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentRidesIndexRoute =
   AuthenticatedStudentRidesIndexRouteImport.update({
     id: '/student/rides/',
     path: '/student/rides/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentRidesIdRoute =
+  AuthenticatedStudentRidesIdRouteImport.update({
+    id: '/student/rides/$id',
+    path: '/student/rides/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -118,6 +132,8 @@ export interface FileRoutesByFullPath {
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/student/request': typeof AuthenticatedStudentRequestRoute
+  '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -134,6 +150,8 @@ export interface FileRoutesByTo {
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/student/request': typeof AuthenticatedStudentRequestRoute
+  '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRoutesById {
@@ -152,6 +170,8 @@ export interface FileRoutesById {
   '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
   '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
+  '/_authenticated/student/request': typeof AuthenticatedStudentRequestRoute
+  '/_authenticated/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/_authenticated/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +190,8 @@ export interface FileRouteTypes {
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
+    | '/student/request'
+    | '/student/rides/$id'
     | '/student/rides/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -186,6 +208,8 @@ export interface FileRouteTypes {
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
+    | '/student/request'
+    | '/student/rides/$id'
     | '/student/rides'
   id:
     | '__root__'
@@ -203,6 +227,8 @@ export interface FileRouteTypes {
     | '/_authenticated/student/activity'
     | '/_authenticated/student/home'
     | '/_authenticated/student/profile'
+    | '/_authenticated/student/request'
+    | '/_authenticated/student/rides/$id'
     | '/_authenticated/student/rides/'
   fileRoutesById: FileRoutesById
 }
@@ -320,11 +346,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/student/request': {
+      id: '/_authenticated/student/request'
+      path: '/student/request'
+      fullPath: '/student/request'
+      preLoaderRoute: typeof AuthenticatedStudentRequestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/rides/': {
       id: '/_authenticated/student/rides/'
       path: '/student/rides'
       fullPath: '/student/rides/'
       preLoaderRoute: typeof AuthenticatedStudentRidesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/rides/$id': {
+      id: '/_authenticated/student/rides/$id'
+      path: '/student/rides/$id'
+      fullPath: '/student/rides/$id'
+      preLoaderRoute: typeof AuthenticatedStudentRidesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -334,6 +374,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
   AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
+  AuthenticatedStudentRequestRoute: typeof AuthenticatedStudentRequestRoute
+  AuthenticatedStudentRidesIdRoute: typeof AuthenticatedStudentRidesIdRoute
   AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
 }
 
@@ -341,6 +383,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
   AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
+  AuthenticatedStudentRequestRoute: AuthenticatedStudentRequestRoute,
+  AuthenticatedStudentRidesIdRoute: AuthenticatedStudentRidesIdRoute,
   AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
 }
 
