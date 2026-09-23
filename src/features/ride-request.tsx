@@ -25,6 +25,12 @@ import {
 
 type Step = "route" | "time" | "review";
 
+interface FieldErrors {
+  origin?: string | undefined;
+  destination?: string | undefined;
+  time?: string | undefined;
+}
+
 interface Coords {
   latitude: number | null;
   longitude: number | null;
@@ -48,7 +54,7 @@ export function RideRequestPage({
 
   const [locating, setLocating] = useState(false);
   const [locationNote, setLocationNote] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ origin?: string; destination?: string; time?: string }>({});
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -82,7 +88,7 @@ export function RideRequestPage({
   }
 
   function continueFromRoute() {
-    const next: typeof errors = {};
+    const next: FieldErrors = {};
     if (!origin.trim()) next.origin = "Add your current location.";
     if (!destination.trim()) next.destination = "Add where you're going.";
     setErrors(next);
