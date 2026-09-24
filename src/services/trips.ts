@@ -64,8 +64,8 @@ export async function confirmRide(groupId: string) {
   fail(error);
 }
 /** Trips for groups the signed-in student belongs to (RLS). */
-export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "status">[]> {
-  const { data, error } = await supabase.from("trips").select("group_id,status");
+export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "status" | "dispatch_state">[]> {
+  const { data, error } = await supabase.from("trips").select("group_id,status,dispatch_state");
   fail(error);
   return data ?? [];
 }
@@ -105,7 +105,10 @@ export async function withdrawTrip(id: string, reason: string) {
 }
 
 /* ---------- admins ---------- */
-export interface EligibleRider { user_id: string; full_name: string; vehicle_description: string; plate_number: string | null; busy: boolean }
+export interface EligibleRider {
+  user_id: string; full_name: string; vehicle_description: string; plate_number: string | null; busy: boolean;
+  availability: "online" | "offline" | "busy"; has_pending_offer: boolean; fairness: import("./dispatch").FairnessBreakdown;
+}
 export async function adminListTrips(): Promise<Trip[]> {
   const { data, error } = await supabase.from("trips").select("*").order("created_at", { ascending: false }).limit(300);
   fail(error);
@@ -114,7 +117,7 @@ export async function adminListTrips(): Promise<Trip[]> {
 export async function adminListEligibleRiders(): Promise<EligibleRider[]> {
   const { data, error } = await supabase.rpc("admin_list_eligible_riders");
   fail(error);
-  return (data ?? []) as EligibleRider[];
+  return (data ?? []) as unknown as EligibleRider[];
 }
 export async function adminRiderNames(): Promise<Record<string, string>> {
   const { data, error } = await supabase.from("rider_applications").select("user_id,full_name,plate_number");
