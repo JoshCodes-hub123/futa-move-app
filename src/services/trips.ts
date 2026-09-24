@@ -18,8 +18,8 @@ export function isCancelled(s: string) {
 
 export const STUDENT_TRIP_LABEL: Record<TripStatus, string> = {
   confirmed: "Waiting for a rider",
-  assigned: "Waiting for a rider",
-  accepted: "Rider assigned",
+  assigned: "Rider assigned",
+  accepted: "Rider accepted",
   arriving: "Rider is on the way",
   picked_up: "Picked up",
   in_progress: "Ride in progress",
@@ -30,6 +30,18 @@ export const STUDENT_TRIP_LABEL: Record<TripStatus, string> = {
   expired: "Ride expired",
   no_show: "Marked as no-show",
 };
+
+/** Student-facing wording; dispatch internals stay hidden. */
+export function studentTripLabel(status: TripStatus, dispatchState?: string | null, confirmedAt?: string | null) {
+  if (status === "confirmed" || status === "assigned") {
+    if (dispatchState === "escalated") return "FUTAMOVE support is reviewing your ride";
+    if (status === "assigned") return "Rider assigned";
+    const waited = confirmedAt ? (Date.now() - new Date(confirmedAt).getTime()) / 60000 : 0;
+    if (dispatchState === "offer_pending" || dispatchState === "searching") return waited > 3 ? "Still finding a rider" : "Finding a rider";
+    return "Waiting for a rider";
+  }
+  return STUDENT_TRIP_LABEL[status];
+}
 
 export const ADMIN_TRIP_LABEL: Record<TripStatus, string> = {
   confirmed: "Pending assignment",
@@ -47,8 +59,15 @@ export const ADMIN_TRIP_LABEL: Record<TripStatus, string> = {
 };
 
 export class TripError extends Error {}
+/** Turns structured database refusals into user-safe wording. */
+export function friendlyTripError(message: string) {
+  if (message.includes("NOT_AUTHORIZED_TO_CHANGE_TRIP_STATUS") || /permission denied/i.test(message)) {
+    return "You're not allowed to change this ride. Use the buttons on this screen instead.";
+  }
+  return message;
+}
 function fail(error: { message: string } | null): asserts error is null {
-  if (error) throw new TripError(error.message);
+  if (error) throw new TripError(friendlyTripError(error.message));
 }
 
 /* ---------- students ---------- */
@@ -57,8 +76,8 @@ export async function confirmRide(groupId: string) {
   fail(error);
 }
 /** Trips for groups the signed-in student belongs to (RLS). */
-export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "status">[]> {
-  const { data, error } = await supabase.from("trips").select("group_id,status");
+export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "status" | "dispatch_state">[]> {
+  const { data, error } = await supabase.from("trips").select("group_id,status,dispatch_state");
   fail(error);
   return data ?? [];
 }
@@ -98,7 +117,10 @@ export async function withdrawTrip(id: string, reason: string) {
 }
 
 /* ---------- admins ---------- */
-export interface EligibleRider { user_id: string; full_name: string; vehicle_description: string; plate_number: string | null; busy: boolean }
+export interface EligibleRider {
+  user_id: string; full_name: string; vehicle_description: string; plate_number: string | null; busy: boolean;
+  availability: "online" | "offline" | "busy"; has_pending_offer: boolean; fairness: import("./dispatch").FairnessBreakdown;
+}
 export async function adminListTrips(): Promise<Trip[]> {
   const { data, error } = await supabase.from("trips").select("*").order("created_at", { ascending: false }).limit(300);
   fail(error);
@@ -107,15 +129,15 @@ export async function adminListTrips(): Promise<Trip[]> {
 export async function adminListEligibleRiders(): Promise<EligibleRider[]> {
   const { data, error } = await supabase.rpc("admin_list_eligible_riders");
   fail(error);
-  return (data ?? []) as EligibleRider[];
+  return (data ?? []) as unknown as EligibleRider[];
 }
 export async function adminRiderNames(): Promise<Record<string, string>> {
   const { data, error } = await supabase.from("rider_applications").select("user_id,full_name,plate_number");
   fail(error);
   return Object.fromEntries((data ?? []).map((r) => [r.user_id, `${r.full_name}${r.plate_number ? ` · ${r.plate_number}` : ""}`]));
 }
-export async function adminAssignRider(tripId: string, riderId: string) {
-  const { error } = await supabase.rpc("admin_assign_rider", { p_trip_id: tripId, p_rider_id: riderId });
+export async function adminAssignRider(tripId: string, riderId: string, override = false) {
+  const { error } = await supabase.rpc("admin_assign_rider", { p_trip_id: tripId, p_rider_id: riderId, p_override: override });
   fail(error);
 }
 export async function adminCancelTrip(tripId: string, outcome: "cancelled_by_admin" | "no_show" | "expired", reason: string) {

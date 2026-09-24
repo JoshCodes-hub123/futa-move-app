@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      dispatch_events: {
+        Row: {
+          actor_id: string | null
+          actor_role: string
+          created_at: string
+          dispatch_score: number | null
+          event_type: string
+          from_state: string | null
+          id: string
+          offer_id: string | null
+          reason: Json | null
+          rider_id: string | null
+          to_state: string | null
+          trip_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          dispatch_score?: number | null
+          event_type: string
+          from_state?: string | null
+          id?: string
+          offer_id?: string | null
+          reason?: Json | null
+          rider_id?: string | null
+          to_state?: string | null
+          trip_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          dispatch_score?: number | null
+          event_type?: string
+          from_state?: string | null
+          id?: string
+          offer_id?: string | null
+          reason?: Json | null
+          rider_id?: string | null
+          to_state?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_events_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "ride_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_settings: {
+        Row: {
+          escalate_after_seconds: number
+          fairness_window_days: number
+          id: boolean
+          max_offers: number
+          offer_timeout_seconds: number
+          updated_at: string
+          updated_by: string | null
+          weights: Json
+        }
+        Insert: {
+          escalate_after_seconds?: number
+          fairness_window_days?: number
+          id?: boolean
+          max_offers?: number
+          offer_timeout_seconds?: number
+          updated_at?: string
+          updated_by?: string | null
+          weights?: Json
+        }
+        Update: {
+          escalate_after_seconds?: number
+          fairness_window_days?: number
+          id?: boolean
+          max_offers?: number
+          offer_timeout_seconds?: number
+          updated_at?: string
+          updated_by?: string | null
+          weights?: Json
+        }
+        Relationships: []
+      }
       location_suggestions: {
         Row: {
           approved_location_id: string | null
@@ -234,6 +327,59 @@ export type Database = {
           },
         ]
       }
+      ride_offers: {
+        Row: {
+          created_at: string
+          dispatch_reason: Json | null
+          dispatch_score: number | null
+          expires_at: string
+          id: string
+          offered_at: string
+          responded_at: string | null
+          response: string
+          response_reason: string | null
+          rider_id: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dispatch_reason?: Json | null
+          dispatch_score?: number | null
+          expires_at: string
+          id?: string
+          offered_at?: string
+          responded_at?: string | null
+          response?: string
+          response_reason?: string | null
+          rider_id: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dispatch_reason?: Json | null
+          dispatch_score?: number | null
+          expires_at?: string
+          id?: string
+          offered_at?: string
+          responded_at?: string | null
+          response?: string
+          response_reason?: string | null
+          rider_id?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_offers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_requests: {
         Row: {
           created_at: string
@@ -385,6 +531,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rider_availability: {
+        Row: {
+          changed_at: string
+          latitude: number | null
+          location_accuracy_m: number | null
+          location_at: string | null
+          longitude: number | null
+          rider_id: string
+          status: string
+        }
+        Insert: {
+          changed_at?: string
+          latitude?: number | null
+          location_accuracy_m?: number | null
+          location_at?: string | null
+          longitude?: number | null
+          rider_id: string
+          status?: string
+        }
+        Update: {
+          changed_at?: string
+          latitude?: number | null
+          location_accuracy_m?: number | null
+          location_at?: string | null
+          longitude?: number | null
+          rider_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           avatar_path: string | null
@@ -499,6 +675,9 @@ export type Database = {
           departure_time: string
           destination_location_id: string | null
           destination_text: string
+          dispatch_started_at: string
+          dispatch_state: string
+          escalated_at: string | null
           group_id: string
           id: string
           meeting_point_location_id: string | null
@@ -528,6 +707,9 @@ export type Database = {
           departure_time: string
           destination_location_id?: string | null
           destination_text: string
+          dispatch_started_at?: string
+          dispatch_state?: string
+          escalated_at?: string | null
           group_id: string
           id?: string
           meeting_point_location_id?: string | null
@@ -557,6 +739,9 @@ export type Database = {
           departure_time?: string
           destination_location_id?: string | null
           destination_text?: string
+          dispatch_started_at?: string
+          dispatch_state?: string
+          escalated_at?: string | null
           group_id?: string
           id?: string
           meeting_point_location_id?: string | null
@@ -667,18 +852,36 @@ export type Database = {
     Functions: {
       add_group_member: { Args: { p_group_id: string }; Returns: Json }
       admin_assign_rider: {
-        Args: { p_rider_id: string; p_trip_id: string }
+        Args: { p_override?: boolean; p_rider_id: string; p_trip_id: string }
         Returns: undefined
       }
       admin_cancel_trip: {
         Args: { p_outcome: string; p_reason: string; p_trip_id: string }
         Returns: undefined
       }
+      admin_dispatch_overview: {
+        Args: never
+        Returns: {
+          candidate_count: number
+          dispatch_state: string
+          offers_cancelled: number
+          offers_declined: number
+          offers_timed_out: number
+          offers_total: number
+          pending_expires_at: string
+          pending_rider_id: string
+          trip_id: string
+          waiting_seconds: number
+        }[]
+      }
       admin_list_eligible_riders: {
         Args: never
         Returns: {
+          availability: string
           busy: boolean
+          fairness: Json
           full_name: string
+          has_pending_offer: boolean
           plate_number: string
           user_id: string
           vehicle_description: string
@@ -704,6 +907,22 @@ export type Database = {
           vehicle_description: string
           vehicle_photo_path: string
         }[]
+      }
+      admin_mark_rider_no_show: {
+        Args: { p_reason: string; p_trip_id: string }
+        Returns: undefined
+      }
+      admin_redispatch: { Args: { p_trip_id: string }; Returns: undefined }
+      admin_trip_dispatch: { Args: { p_trip_id: string }; Returns: Json }
+      admin_update_dispatch_settings: {
+        Args: {
+          p_escalate_after_seconds: number
+          p_fairness_window_days: number
+          p_max_offers: number
+          p_offer_timeout_seconds: number
+          p_weights: Json
+        }
+        Returns: undefined
       }
       agree_meeting_point: { Args: { p_group_id: string }; Returns: undefined }
       approve_location_suggestion: {
@@ -731,6 +950,20 @@ export type Database = {
         Args: { _a: string; _b: string }
         Returns: boolean
       }
+      dispatch_candidates: {
+        Args: { _trip: string }
+        Returns: {
+          breakdown: Json
+          rider_id: string
+          score: number
+        }[]
+      }
+      dispatch_escalate: {
+        Args: { _trip: string; _why: string }
+        Returns: undefined
+      }
+      dispatch_tick: { Args: never; Returns: undefined }
+      dispatch_trip: { Args: { _trip: string }; Returns: undefined }
       dropoff_radius_m: { Args: never; Returns: number }
       geo_distance_m: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
@@ -753,6 +986,20 @@ export type Database = {
       }
       is_verified_student: { Args: { _user_id: string }; Returns: boolean }
       leave_ride_group: { Args: { p_group_id: string }; Returns: undefined }
+      log_dispatch: {
+        Args: {
+          _from: string
+          _offer: string
+          _reason: Json
+          _rider: string
+          _role: string
+          _score: number
+          _to: string
+          _trip: string
+          _type: string
+        }
+        Returns: undefined
+      }
       log_trip_status: {
         Args: {
           _from: string
@@ -819,6 +1066,7 @@ export type Database = {
         Args: { p_to: string; p_trip_id: string }
         Returns: undefined
       }
+      rider_availability_of: { Args: { _uid: string }; Returns: string }
       rider_available_trips: {
         Args: never
         Returns: {
@@ -833,14 +1081,34 @@ export type Database = {
         }[]
       }
       rider_claim_trip: { Args: { p_trip_id: string }; Returns: undefined }
+      rider_dispatch_score: { Args: { _uid: string }; Returns: Json }
       rider_is_busy: {
         Args: { _except?: string; _uid: string }
         Returns: boolean
       }
       rider_is_eligible: { Args: { _uid: string }; Returns: boolean }
+      rider_my_offers: {
+        Args: never
+        Returns: {
+          departure_time: string
+          destination_text: string
+          expires_at: string
+          meeting_point_note: string
+          meeting_point_text: string
+          member_count: number
+          offer_id: string
+          offered_at: string
+          passenger_count: number
+          trip_id: string
+        }[]
+      }
       rider_respond_assignment: {
         Args: { p_accept: boolean; p_reason?: string; p_trip_id: string }
         Returns: undefined
+      }
+      rider_respond_offer: {
+        Args: { p_accept: boolean; p_offer_id: string; p_reason?: string }
+        Returns: Json
       }
       rider_withdraw_trip: {
         Args: { p_reason: string; p_trip_id: string }
@@ -848,6 +1116,11 @@ export type Database = {
       }
       set_meeting_point: {
         Args: { p_group_id: string; p_location_id: string; p_note?: string }
+        Returns: undefined
+      }
+      set_my_availability: { Args: { p_status: string }; Returns: string }
+      student_dispatch_ping: {
+        Args: { p_group_id: string }
         Returns: undefined
       }
       student_in_active_group: { Args: { _uid: string }; Returns: boolean }

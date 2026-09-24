@@ -7,73 +7,170 @@ import {
   ADMIN_TRIP_LABEL, adminAssignRider, adminCancelTrip, adminListEligibleRiders, adminListTrips, adminRiderNames, fmtTime, getTripHistory,
   isCancelled, isTerminal, type Trip, type TripStatus,
 } from "@/services/trips";
+import {
+  DISPATCH_STATE_LABEL, EVENT_LABEL, adminDispatchOverview, adminMarkRiderNoShow, adminRedispatch, adminTripDispatch, fmtWait,
+  type DispatchOverviewRow, type DispatchState, type FairnessBreakdown,
+} from "@/services/dispatch";
 
-const FILTERS: { key: string; label: string; match: (s: string) => boolean }[] = [
-  { key: "pending", label: "Pending assignment", match: (s) => s === "confirmed" },
-  { key: "assigned", label: "Assigned", match: (s) => s === "assigned" },
-  { key: "accepted", label: "Accepted", match: (s) => s === "accepted" },
-  { key: "arriving", label: "Arriving", match: (s) => s === "arriving" },
-  { key: "progress", label: "In progress", match: (s) => s === "picked_up" || s === "in_progress" },
-  { key: "completed", label: "Completed", match: (s) => s === "completed" },
-  { key: "cancelled", label: "Cancelled", match: (s) => isCancelled(s) },
+const waitingForRider = (t: Trip) => t.status === "confirmed" && !t.rider_id;
+const FILTERS: { key: string; label: string; match: (t: Trip) => boolean }[] = [
+  { key: "attention", label: "Needs admin attention", match: (t) => waitingForRider(t) && t.dispatch_state === "escalated" },
+  { key: "waiting", label: "Waiting for rider", match: (t) => waitingForRider(t) && t.dispatch_state === "searching" },
+  { key: "offer", label: "Offer pending", match: (t) => waitingForRider(t) && t.dispatch_state === "offer_pending" },
+  { key: "assigned", label: "Assigned", match: (t) => t.status === "assigned" },
+  { key: "accepted", label: "Accepted", match: (t) => t.status === "accepted" },
+  { key: "arriving", label: "Arriving", match: (t) => t.status === "arriving" },
+  { key: "progress", label: "In progress", match: (t) => t.status === "picked_up" || t.status === "in_progress" },
+  { key: "completed", label: "Completed", match: (t) => t.status === "completed" },
+  { key: "cancelled", label: "Cancelled", match: (t) => isCancelled(t.status) },
   { key: "all", label: "All", match: () => true },
 ];
 
-function TripCard({ t, riderName, onChanged }: { t: Trip; riderName?: string | undefined; onChanged: () => Promise<void> }) {
+export function Explain({ b }: { b: FairnessBreakdown }) {
+  return (
+    <div className="grid gap-2 text-xs sm:grid-cols-3">
+      <div><p className="font-semibold">Eligibility</p>{(b.eligibility ?? ["Approved rider", "Online", "No active trip"]).map((x) => <p key={x}>✓ {x}</p>)}</div>
+      <div><p className="font-semibold">Suitability</p>{(b.suitability ?? []).map((x) => <p key={x}>✓ {x}</p>)}<p className="text-muted-foreground">Distance: {b.proximity ?? "not available"}</p></div>
+      <div>
+        <p className="font-semibold">Fairness (last {b.window_days} days)</p>
+        <p>{b.completed_today} rides completed today · {b.completed_window} in window</p>
+        <p>{b.offers_today} offers received today</p>
+        <p>{b.hours_since_last_completed >= 24 ? "24h+" : `${b.hours_since_last_completed}h`} since last completed ride</p>
+        <p>Declines {b.declines_window} · Timeouts {b.timeouts_window} · Withdrawals {b.withdrawals_window} · No-shows {b.no_shows_window}</p>
+        <p className="font-semibold">Score {b.score}</p>
+      </div>
+    </div>
+  );
+}
+
+function DispatchDetail({ tripId }: { tripId: string }) {
+  const d = useQuery({ queryKey: ["trip-dispatch", tripId], queryFn: () => adminTripDispatch(tripId), refetchInterval: 10000 });
+  if (d.isLoading) return <p className="text-xs text-muted-foreground">Loading dispatch…</p>;
+  if (d.isError) return <p className="text-xs text-destructive">{d.error.message}</p>;
+  const v = d.data!;
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="section-label">Offers</p>
+        {v.offers.length ? v.offers.map((o) => (
+          <details key={o.id} className="mt-2 rounded-md border border-border p-2 text-xs">
+            <summary className="cursor-pointer">{fmtTime(o.offered_at)} — {o.rider_name ?? o.rider_id.slice(0, 8)} · <b>{o.response}</b>{o.response_reason ? ` (${o.response_reason})` : ""} · score {o.score ?? "—"} · why selected?</summary>
+            {o.reason && <div className="mt-2"><Explain b={o.reason} /></div>}
+          </details>
+        )) : <p className="mt-1 text-xs text-muted-foreground">No offers yet.</p>}
+      </div>
+      {v.candidates.length > 0 && (
+        <div>
+          <p className="section-label">Current candidates (best first)</p>
+          {v.candidates.map((c, i) => (
+            <details key={c.rider_id} className="mt-2 rounded-md border border-border p-2 text-xs">
+              <summary className="cursor-pointer">#{i + 1} {c.rider_name ?? c.rider_id.slice(0, 8)} · score {c.score}</summary>
+              <div className="mt-2"><Explain b={c.breakdown} /></div>
+            </details>
+          ))}
+        </div>
+      )}
+      <div>
+        <p className="section-label">Dispatch history</p>
+        <ol className="mt-2 space-y-1 text-xs">
+          {v.events.map((e) => (
+            <li key={e.id}>{fmtTime(e.created_at)} — {EVENT_LABEL[e.event_type] ?? e.event_type}{e.rider_name ? ` · ${e.rider_name}` : ""} · by {e.actor_role}
+              {e.reason && typeof e.reason === "object" && !Array.isArray(e.reason) && ("why" in e.reason || "reason" in e.reason) ? ` · ${String((e.reason as Record<string, unknown>)["why"] ?? (e.reason as Record<string, unknown>)["reason"] ?? "")}` : ""}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+function TripCard({ t, riderName, dispatch, onChanged }: { t: Trip; riderName?: string | undefined; dispatch?: DispatchOverviewRow | undefined; onChanged: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [rider, setRider] = useState("");
-  const [outcome, setOutcome] = useState<"cancelled_by_admin" | "no_show" | "expired">("cancelled_by_admin");
+  const [override, setOverride] = useState(false);
+  const [outcome, setOutcome] = useState<"cancelled_by_admin" | "no_show" | "expired" | "rider_no_show">("cancelled_by_admin");
   const [reason, setReason] = useState("");
   const s = t.status as TripStatus;
   const riders = useQuery({ queryKey: ["eligible-riders"], queryFn: adminListEligibleRiders, enabled: open });
   const history = useQuery({ queryKey: ["trip-history", t.id], queryFn: () => getTripHistory(t.id), enabled: open });
-  const assign = useMutation({ mutationFn: () => adminAssignRider(t.id, rider), onSuccess: async () => { setRider(""); await onChanged(); await history.refetch(); } });
-  const cancel = useMutation({ mutationFn: () => adminCancelTrip(t.id, outcome, reason), onSuccess: async () => { setReason(""); await onChanged(); await history.refetch(); } });
+  const after = async () => { await onChanged(); await history.refetch(); };
+  const assign = useMutation({ mutationFn: () => adminAssignRider(t.id, rider, override), onSuccess: async () => { setRider(""); setOverride(false); await after(); } });
+  const cancel = useMutation({
+    mutationFn: () => (outcome === "rider_no_show" ? adminMarkRiderNoShow(t.id, reason) : adminCancelTrip(t.id, outcome, reason)),
+    onSuccess: async () => { setReason(""); await after(); },
+  });
+  const redispatch = useMutation({ mutationFn: () => adminRedispatch(t.id), onSuccess: after });
   const canAssign = s === "confirmed" || s === "assigned" || s === "accepted";
-  const err = assign.error ?? cancel.error;
+  const riderOnTrip = !!t.rider_id && (s === "assigned" || s === "accepted" || s === "arriving");
+  const err = assign.error ?? cancel.error ?? redispatch.error;
+  const chosen = riders.data?.find((r) => r.user_id === rider);
+  const ds = t.dispatch_state as DispatchState;
 
   return (
-    <div className="surface-panel p-4 text-sm">
+    <div className={`surface-panel p-4 text-sm ${ds === "escalated" && waitingForRider(t) ? "border-destructive/60" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-semibold">{t.meeting_point_text} → {t.destination_text}</p>
-          <p className="text-xs text-muted-foreground">Departs {fmtTime(t.departure_time)} · {t.passenger_count} passengers in {t.member_count} bookings · Trip {t.id.slice(0, 8)} · Group {t.group_id.slice(0, 8)}</p>
+          <p className="text-xs text-muted-foreground">Departs {fmtTime(t.departure_time)} · {t.passenger_count} passengers in {t.member_count} bookings · Trip {t.id.slice(0, 8)}</p>
           <p className="mt-1 text-xs">Rider: {riderName ?? (t.rider_id ? t.rider_id.slice(0, 8) : "None")}</p>
         </div>
-        <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">{ADMIN_TRIP_LABEL[s]}</span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">{ADMIN_TRIP_LABEL[s]}</span>
+          {waitingForRider(t) && <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${ds === "escalated" ? "bg-destructive/15 text-destructive" : "bg-muted"}`}>{DISPATCH_STATE_LABEL[ds]}</span>}
+        </div>
       </div>
+      {dispatch && waitingForRider(t) && (
+        <p className="mt-2 text-xs">
+          Waiting {fmtWait(dispatch.waiting_seconds)} · {dispatch.offers_total} riders offered ({dispatch.offers_declined} declined, {dispatch.offers_timed_out} timed out, {dispatch.offers_cancelled} cancelled)
+          · {dispatch.candidate_count ?? 0} eligible now
+          {dispatch.pending_expires_at && ` · current offer expires ${new Date(dispatch.pending_expires_at).toLocaleTimeString()}`}
+        </p>
+      )}
       <p className="mt-2 text-xs text-muted-foreground">
         Confirmed {fmtTime(t.confirmed_at)} · Assigned {fmtTime(t.assigned_at)} · Accepted {fmtTime(t.accepted_at)} · Arriving {fmtTime(t.arriving_at)} · Picked up {fmtTime(t.picked_up_at)} · Started {fmtTime(t.started_at)} · Completed {fmtTime(t.completed_at)}
         {t.cancelled_at && ` · Cancelled ${fmtTime(t.cancelled_at)} (${t.cancel_reason ?? "no reason"}, was ${t.cancelled_from_status})`}
       </p>
-      <Button variant="ghost" size="sm" className="mt-2 px-0" onClick={() => setOpen(!open)}>{open ? "Hide details" : "Manage & history"}</Button>
+      <Button variant="ghost" size="sm" className="mt-2 px-0" onClick={() => setOpen(!open)}>{open ? "Hide details" : "Manage, dispatch & history"}</Button>
       {open && (
         <div className="mt-3 space-y-4 border-t border-border pt-4">
           {canAssign && (
-            <div className="flex flex-wrap gap-2">
-              <select className="h-10 min-w-56 rounded-md border border-input bg-background px-3" value={rider} onChange={(e) => setRider(e.target.value)}>
-                <option value="">{riders.isLoading ? "Loading riders…" : "Choose an approved rider"}</option>
-                {riders.data?.map((r) => (
-                  <option key={r.user_id} value={r.user_id} disabled={r.busy || r.user_id === t.rider_id}>
-                    {r.full_name}{r.plate_number ? ` · ${r.plate_number}` : ""}{r.busy ? " (on a ride)" : ""}
-                  </option>
-                ))}
-              </select>
-              <Button size="sm" disabled={!rider || assign.isPending} onClick={() => assign.mutate()}>{t.rider_id ? "Reassign rider" : "Assign rider"}</Button>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <select className="h-10 min-w-56 rounded-md border border-input bg-background px-3" value={rider} onChange={(e) => setRider(e.target.value)}>
+                  <option value="">{riders.isLoading ? "Loading riders…" : "Choose an approved rider"}</option>
+                  {riders.data?.map((r) => (
+                    <option key={r.user_id} value={r.user_id} disabled={r.busy || r.user_id === t.rider_id}>
+                      {r.full_name}{r.plate_number ? ` · ${r.plate_number}` : ""} · {r.busy ? "on a ride" : r.availability} · score {r.fairness.score}
+                    </option>
+                  ))}
+                </select>
+                <Button size="sm" disabled={!rider || assign.isPending} onClick={() => assign.mutate()}>{t.rider_id ? "Reassign rider" : "Assign rider"}</Button>
+              </div>
+              {chosen && chosen.availability !== "online" && (
+                <label className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} />
+                  Emergency override — this rider is {chosen.availability}. Assign anyway.
+                </label>
+              )}
             </div>
+          )}
+          {waitingForRider(t) && (
+            <Button size="sm" variant="secondary" disabled={redispatch.isPending} onClick={() => redispatch.mutate()}>Restart automatic dispatch</Button>
           )}
           {!isTerminal(s) && (
             <div className="flex flex-wrap gap-2">
               <select className="h-10 rounded-md border border-input bg-background px-3" value={outcome} onChange={(e) => setOutcome(e.target.value as typeof outcome)}>
                 <option value="cancelled_by_admin">Cancel ride</option>
-                <option value="no_show">No-show</option>
+                <option value="no_show">Students no-show</option>
                 <option value="expired">Expired</option>
+                {riderOnTrip && <option value="rider_no_show">Rider no-show (find another rider)</option>}
               </select>
               <Input className="max-w-xs" placeholder="Reason (required)" value={reason} onChange={(e) => setReason(e.target.value)} />
               <Button size="sm" variant="secondary" disabled={!reason.trim() || cancel.isPending} onClick={() => cancel.mutate()}>Apply</Button>
             </div>
           )}
           {err && <p className="text-destructive">{err.message}</p>}
+          <DispatchDetail tripId={t.id} />
           <div>
             <p className="section-label">Status history</p>
             <ol className="mt-2 space-y-1 text-xs">
@@ -90,25 +187,28 @@ function TripCard({ t, riderName, onChanged }: { t: Trip; riderName?: string | u
 
 export function AdminRidesPage() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState("pending");
-  const trips = useQuery({ queryKey: ["admin-trips"], queryFn: adminListTrips, refetchInterval: 10000 });
+  const [filter, setFilter] = useState("attention");
+  const trips = useQuery({ queryKey: ["admin-trips"], queryFn: adminListTrips, refetchInterval: 15000 });
+  const overview = useQuery({ queryKey: ["admin-dispatch-overview"], queryFn: adminDispatchOverview, refetchInterval: 15000 });
   const names = useQuery({ queryKey: ["admin-rider-names"], queryFn: adminRiderNames });
   const f = FILTERS.find((x) => x.key === filter)!;
-  const rows = (trips.data ?? []).filter((t) => f.match(t.status));
-  const refresh = async () => { await qc.invalidateQueries({ queryKey: ["admin-trips"] }); await qc.invalidateQueries({ queryKey: ["eligible-riders"] }); };
+  const rows = (trips.data ?? []).filter(f.match);
+  const refresh = async () => {
+    await Promise.all(["admin-trips", "admin-dispatch-overview", "eligible-riders", "trip-dispatch"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+  };
   return (
-    <AdminFrame title="Rides" intro="Confirmed student groups, rider assignment and trip history.">
+    <AdminFrame title="Rides" intro="Confirmed student groups, automatic dispatch, rider assignment and trip history.">
       <div className="mt-6 flex flex-wrap gap-1">
         {FILTERS.map((x) => (
           <button key={x.key} type="button" onClick={() => setFilter(x.key)}
             className={`rounded-full px-3 py-1.5 text-sm ${filter === x.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-            {x.label} ({(trips.data ?? []).filter((t) => x.match(t.status)).length})
+            {x.label} ({(trips.data ?? []).filter(x.match).length})
           </button>
         ))}
       </div>
       <div className="mt-6 space-y-3">
         {trips.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : trips.isError ? <p className="text-sm text-destructive">{trips.error.message}</p>
-          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} onChanged={refresh} />)
+          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} dispatch={overview.data?.[t.id]} onChanged={refresh} />)
           : <p className="text-sm text-muted-foreground">No rides here.</p>}
       </div>
     </AdminFrame>

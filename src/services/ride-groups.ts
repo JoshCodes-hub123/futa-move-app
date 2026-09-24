@@ -44,6 +44,8 @@ export interface GroupTrip {
   id: string;
   status: import("./trips").TripStatus;
   meeting_point_text: string;
+  dispatch_state: import("./dispatch").DispatchState;
+  confirmed_at: string;
   assigned_at: string | null; accepted_at: string | null; arriving_at: string | null; picked_up_at: string | null;
   started_at: string | null; completed_at: string | null; cancelled_at: string | null; cancel_reason: string | null;
   /** Only shown once the rider accepted: first name and keke details. */

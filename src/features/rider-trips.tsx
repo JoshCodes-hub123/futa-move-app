@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarClock, CheckCircle2, Loader2, MapPin, Users } from "lucide-react";
 import { AppShell } from "@/components/futamove/app-shell";
 import { EmptyState, LoadingState, ScreenHeader, SectionHeading } from "@/components/futamove/primitives";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatDepartureTime } from "@/services/ride-requests";
+import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, type Availability, type RideOffer } from "@/services/dispatch";
 import {
   ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, withdrawTrip,
   type Trip, type TripStatus,
@@ -84,38 +85,107 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
   );
 }
 
-/** Rider home: current ride + available confirmed rides. */
+function useCountdown(to: string) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, []);
+  return Math.max(0, Math.round((new Date(to).getTime() - now) / 1000));
+}
+
+function OfferCard({ offer, onDone }: { offer: RideOffer; onDone: () => Promise<void> }) {
+  const left = useCountdown(offer.expires_at);
+  const [msg, setMsg] = useState<string | null>(null);
+  const act = useMutation({
+    mutationFn: (accept: boolean) => respondOffer(offer.offer_id, accept),
+    onSuccess: async (r) => { if (!r.ok) setMsg("This offer expired before you answered."); await onDone(); },
+    onError: onDone,
+  });
+  return (
+    <section className="mt-8 surface-panel border-brand/60 p-5">
+      <div className="flex items-center justify-between">
+        <p className="section-label">New ride offer</p>
+        <Badge variant="warning" className="rounded-full tabular-nums">{left > 0 ? `${left}s left` : "Expiring…"}</Badge>
+      </div>
+      <div className="mt-4"><Route from={offer.meeting_point_text} to={offer.destination_text} when={offer.departure_time} pax={offer.passenger_count} note={offer.meeting_point_note} /></div>
+      <p className="mt-3 text-xs text-muted-foreground">{offer.member_count} {offer.member_count === 1 ? "booking" : "bookings"} · pickup at the agreed meeting point</p>
+      {(act.error || msg) && <p className="mt-3 text-sm text-destructive">{msg ?? act.error?.message}</p>}
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <Button variant="secondary" disabled={act.isPending || left === 0} onClick={() => act.mutate(false)}>Decline</Button>
+        <Button disabled={act.isPending || left === 0} onClick={() => act.mutate(true)}>{act.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />} Accept</Button>
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">Declining is fine — it won't count against you. If you don't answer in time, the ride goes to the next rider.</p>
+    </section>
+  );
+}
+
+const AVAILABILITY: { key: Availability; label: string; hint: string }[] = [
+  { key: "online", label: "Online", hint: "You'll receive ride offers." },
+  { key: "busy", label: "Busy", hint: "Taking a short break. No offers for now." },
+  { key: "offline", label: "Offline", hint: "No ride offers." },
+];
+
+/** Rider home: availability, offers, current ride and rides waiting without an offer. */
 export function RiderOperations() {
   const qc = useQueryClient();
-  const mine = useQuery({ queryKey: ["rider-trips"], queryFn: listMyRiderTrips, refetchInterval: 8000 });
-  const available = useQuery({ queryKey: ["rider-available"], queryFn: listAvailableTrips, refetchInterval: 8000 });
-  const refresh = async () => { await qc.invalidateQueries({ queryKey: ["rider-trips"] }); await qc.invalidateQueries({ queryKey: ["rider-available"] }); };
+  const availability = useQuery({ queryKey: ["rider-availability"], queryFn: getMyAvailability });
+  const online = availability.data === "online";
+  const mine = useQuery({ queryKey: ["rider-trips"], queryFn: listMyRiderTrips, refetchInterval: 10000 });
+  const offers = useQuery({ queryKey: ["rider-offers"], queryFn: listMyOffers, refetchInterval: online ? 6000 : false, enabled: online });
+  const available = useQuery({ queryKey: ["rider-available"], queryFn: listAvailableTrips, refetchInterval: online ? 15000 : false, enabled: online });
+  const refresh = async () => {
+    await Promise.all(["rider-trips", "rider-available", "rider-offers", "rider-availability"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+  };
+  const setAvail = useMutation({ mutationFn: setMyAvailability, onSuccess: refresh });
   const claim = useMutation({ mutationFn: claimTrip, onSuccess: refresh, onError: refresh });
   const current = mine.data?.find((t) => ACTIVE_TRIP_STATUSES.includes(t.status as TripStatus));
+  const offer = online && !current ? offers.data?.[0] : undefined;
+  const hasOffer = !!offers.data?.length;
 
   return (
     <>
-      {mine.isLoading ? <LoadingState /> : current ? <CurrentTrip trip={current} onDone={refresh} /> : (
-        <section className="mt-8 surface-panel p-5 text-sm"><p className="section-label">Status</p><p className="mt-2">You're available. Accept a ride below or wait for FUTAMOVE to assign one.</p></section>
-      )}
-      <section className="mt-10 space-y-3">
-        <SectionHeading title="Available rides" detail={String(available.data?.length ?? 0)} />
-        {claim.error && <p className="text-sm text-destructive">{claim.error.message}</p>}
-        {available.isLoading ? <LoadingState /> : available.data?.length ? (
-          <div className="divider-list">
-            {available.data.map((t) => (
-              <div key={t.id} className="py-4">
-                <Route from={t.meeting_point_text} to={t.destination_text} when={t.departure_time} pax={t.passenger_count} note={t.meeting_point_note} />
-                <Button className="mt-3 w-full" size="sm" disabled={!!current || claim.isPending} onClick={() => claim.mutate(t.id)}>
-                  {current ? "Finish your current ride first" : "Accept ride"}
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="surface-panel"><EmptyState compact title="No rides waiting" description="Confirmed student groups will appear here." icon={CalendarClock} /></div>
-        )}
+      <section className="mt-8 surface-panel p-5 text-sm">
+        <p className="section-label">Availability</p>
+        <div className="mt-3 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Availability">
+          {AVAILABILITY.map((a) => (
+            <button key={a.key} type="button" role="radio" aria-checked={availability.data === a.key} disabled={setAvail.isPending}
+              onClick={() => setAvail.mutate(a.key)}
+              className={`rounded-md border px-3 py-2.5 font-semibold transition-colors ${availability.data === a.key ? "border-brand bg-brand/15 text-foreground" : "border-border text-muted-foreground hover:bg-muted"}`}>
+              {a.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {current ? "You're on a ride. New offers pause until you finish." : AVAILABILITY.find((a) => a.key === availability.data)?.hint}
+        </p>
+        {setAvail.error && <p className="mt-2 text-destructive">{setAvail.error.message}</p>}
       </section>
+
+      {offer && <OfferCard key={offer.offer_id} offer={offer} onDone={refresh} />}
+
+      {mine.isLoading ? <LoadingState /> : current ? <CurrentTrip trip={current} onDone={refresh} /> : !offer && online && (
+        <section className="mt-8 surface-panel p-5 text-sm"><p className="section-label">Status</p><p className="mt-2">You're online. FUTAMOVE will offer you a suitable ride — riders take turns fairly.</p></section>
+      )}
+
+      {online && (
+        <section className="mt-10 space-y-3">
+          <SectionHeading title="Rides waiting for a rider" detail={String(available.data?.length ?? 0)} />
+          <p className="text-xs text-muted-foreground">Rides here aren't currently offered to anyone. You can take one if you're free.</p>
+          {claim.error && <p className="text-sm text-destructive">{claim.error.message}</p>}
+          {available.isLoading ? <LoadingState /> : available.data?.length ? (
+            <div className="divider-list">
+              {available.data.map((t) => (
+                <div key={t.id} className="py-4">
+                  <Route from={t.meeting_point_text} to={t.destination_text} when={t.departure_time} pax={t.passenger_count} note={t.meeting_point_note} />
+                  <Button className="mt-3 w-full" size="sm" variant="secondary" disabled={!!current || hasOffer || claim.isPending} onClick={() => claim.mutate(t.id)}>
+                    {current ? "Finish your current ride first" : hasOffer ? "Answer your offer first" : "Take this ride"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="surface-panel"><EmptyState compact title="No rides waiting" description="New rides are offered to riders automatically." icon={CalendarClock} /></div>
+          )}
+        </section>
+      )}
     </>
   );
 }
