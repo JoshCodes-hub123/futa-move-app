@@ -14,3 +14,5 @@
 - [x] Rider registration + admin approval/reject/suspend (/admin/riders)
 - [x] Community location suggestions + admin review into locations (/admin/location-suggestions)
 - [x] Ride lifecycle: confirm ride, trips, rider accept/advance, admin /admin/rides, audit history
+- [x] Phase 2B Smart Dispatch: availability, offers, fairness scoring, retry/escalation, audit, admin /admin/dispatch
+- [ ] Phase 2B signed-in browser walkthrough (student A/B, rider, admin) — not yet performed
