@@ -47,8 +47,15 @@ export const ADMIN_TRIP_LABEL: Record<TripStatus, string> = {
 };
 
 export class TripError extends Error {}
+/** Turns structured database refusals into user-safe wording. */
+export function friendlyTripError(message: string) {
+  if (message.includes("NOT_AUTHORIZED_TO_CHANGE_TRIP_STATUS") || /permission denied/i.test(message)) {
+    return "You're not allowed to change this ride. Use the buttons on this screen instead.";
+  }
+  return message;
+}
 function fail(error: { message: string } | null): asserts error is null {
-  if (error) throw new TripError(error.message);
+  if (error) throw new TripError(friendlyTripError(error.message));
 }
 
 /* ---------- students ---------- */
@@ -114,8 +121,8 @@ export async function adminRiderNames(): Promise<Record<string, string>> {
   fail(error);
   return Object.fromEntries((data ?? []).map((r) => [r.user_id, `${r.full_name}${r.plate_number ? ` · ${r.plate_number}` : ""}`]));
 }
-export async function adminAssignRider(tripId: string, riderId: string) {
-  const { error } = await supabase.rpc("admin_assign_rider", { p_trip_id: tripId, p_rider_id: riderId });
+export async function adminAssignRider(tripId: string, riderId: string, override = false) {
+  const { error } = await supabase.rpc("admin_assign_rider", { p_trip_id: tripId, p_rider_id: riderId, p_override: override });
   fail(error);
 }
 export async function adminCancelTrip(tripId: string, outcome: "cancelled_by_admin" | "no_show" | "expired", reason: string) {
