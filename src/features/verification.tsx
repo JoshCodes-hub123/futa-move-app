@@ -12,7 +12,7 @@ import { getMyStudentProfile, submitVerification, validateImage, VERIFICATION_LA
 
 type Errors = Partial<Record<"fullName" | "matric" | "faculty" | "avatar" | "idCard" | "form", string>>;
 
-function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round }: { id: string; label: string; hint: string; icon: typeof Camera; file: File | null; onChange: (f: File | null) => void; error?: string | undefined; round?: boolean }) {
+export function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round }: { id: string; label: string; hint: string; icon: typeof Camera; file: File | null; onChange: (f: File | null) => void; error?: string | undefined; round?: boolean }) {
   const [preview, setPreview] = useState<string | null>(null);
   useEffect(() => {
     if (!file) { setPreview(null); return; }
