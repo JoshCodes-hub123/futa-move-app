@@ -18,7 +18,8 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
-import { confirmRide, isCancelled, listMyGroupTrips, STUDENT_TRIP_LABEL, type TripStatus } from "@/services/trips";
+import { confirmRide, isCancelled, listMyGroupTrips, STUDENT_TRIP_LABEL, studentTripLabel, type TripStatus } from "@/services/trips";
+import { pingDispatch } from "@/services/dispatch";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
@@ -34,7 +35,7 @@ function StatusPill({ status }: { status: RideRequest["status"] }) {
   );
 }
 
-function RequestRow({ request, trip }: { request: RideRequest; trip?: TripStatus | undefined }) {
+function RequestRow({ request, trip, dispatchState }: { request: RideRequest; trip?: TripStatus | undefined; dispatchState?: string | undefined }) {
   return (
     <Link
       to="/student/rides/$id"
@@ -43,7 +44,7 @@ function RequestRow({ request, trip }: { request: RideRequest; trip?: TripStatus
     >
       <div className="min-w-0 flex-1">
         <p className="section-label mb-2">
-          {trip && request.group_id ? STUDENT_TRIP_LABEL[trip] : request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
+          {trip && request.group_id ? studentTripLabel(trip, dispatchState) : request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
         </p>
         <p className="truncate text-sm font-semibold">{request.origin_text}</p>
         <p className="truncate text-sm font-semibold text-muted-foreground">↓ {request.destination_text}</p>

@@ -18,8 +18,8 @@ export function isCancelled(s: string) {
 
 export const STUDENT_TRIP_LABEL: Record<TripStatus, string> = {
   confirmed: "Waiting for a rider",
-  assigned: "Waiting for a rider",
-  accepted: "Rider assigned",
+  assigned: "Rider assigned",
+  accepted: "Rider accepted",
   arriving: "Rider is on the way",
   picked_up: "Picked up",
   in_progress: "Ride in progress",
@@ -30,6 +30,18 @@ export const STUDENT_TRIP_LABEL: Record<TripStatus, string> = {
   expired: "Ride expired",
   no_show: "Marked as no-show",
 };
+
+/** Student-facing wording; dispatch internals stay hidden. */
+export function studentTripLabel(status: TripStatus, dispatchState?: string | null, confirmedAt?: string | null) {
+  if (status === "confirmed" || status === "assigned") {
+    if (dispatchState === "escalated") return "FUTAMOVE support is reviewing your ride";
+    if (status === "assigned") return "Rider assigned";
+    const waited = confirmedAt ? (Date.now() - new Date(confirmedAt).getTime()) / 60000 : 0;
+    if (dispatchState === "offer_pending" || dispatchState === "searching") return waited > 3 ? "Still finding a rider" : "Finding a rider";
+    return "Waiting for a rider";
+  }
+  return STUDENT_TRIP_LABEL[status];
+}
 
 export const ADMIN_TRIP_LABEL: Record<TripStatus, string> = {
   confirmed: "Pending assignment",
