@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { CATEGORY_LABELS, CATEGORY_ORDER, listActiveLocations, type FutaLocation } from "@/services/locations";
 import {
-  FUTA_POINTS,
   createRideRequest,
   formatDepartureTime,
   roundedSuggestions,
@@ -33,11 +34,6 @@ interface FieldErrors {
   meetingPoint?: string | undefined;
 }
 
-interface Coords {
-  latitude: number | null;
-  longitude: number | null;
-}
-
 export function RideRequestPage({
   initialOrigin = "",
   initialDestination = "",
@@ -48,55 +44,33 @@ export function RideRequestPage({
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("route");
 
-  const [origin, setOrigin] = useState(initialOrigin);
-  const [originCoords, setOriginCoords] = useState<Coords>({ latitude: null, longitude: null });
-  const [destination, setDestination] = useState(initialDestination);
+  const locationsQuery = useQuery({ queryKey: ["locations", "active"], queryFn: listActiveLocations });
+  const locations = locationsQuery.data ?? [];
+  const byName = (n: string) => locations.find((l) => l.name.toLowerCase() === n.trim().toLowerCase())?.id ?? "";
+  const [originId, setOriginId] = useState("");
+  const [destinationId, setDestinationId] = useState("");
+  const originLoc = locations.find((l) => l.id === (originId || byName(initialOrigin)));
+  const destinationLoc = locations.find((l) => l.id === (destinationId || byName(initialDestination)));
+  const origin = originLoc?.name ?? "";
+  const destination = destinationLoc?.name ?? "";
   const [meetingPoint, setMeetingPoint] = useState("");
   const [rideType, setRideType] = useState<"shared" | "private">("shared");
   const [partySize, setPartySize] = useState(1);
-  const pointIdFor = (text: string) => FUTA_POINTS.find((p) => p.name.toLowerCase() === text.trim().toLowerCase())?.id ?? null;
   const [departure, setDeparture] = useState<string>(new Date().toISOString());
   const [useNow, setUseNow] = useState(true);
 
-  const [locating, setLocating] = useState(false);
-  const [locationNote, setLocationNote] = useState<string | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const suggestions = roundedSuggestions();
 
-  function detectLocation() {
-    setLocationNote(null);
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationNote("Location isn't available on this device. Type your pickup point instead.");
-      return;
-    }
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setOriginCoords({ latitude: position.coords.latitude, longitude: position.coords.longitude });
-        setOrigin((current) => current.trim() || "My current location");
-        setErrors((e) => ({ ...e, origin: undefined }));
-        setLocationNote("Using your current location.");
-        setLocating(false);
-      },
-      (error) => {
-        setLocating(false);
-        setLocationNote(
-          error.code === error.PERMISSION_DENIED
-            ? "Location permission was denied. Type your pickup point instead."
-            : "We couldn't get your location. Type your pickup point instead.",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10_000 },
-    );
-  }
-
   function continueFromRoute() {
     const next: FieldErrors = {};
-    if (!origin.trim()) next.origin = "Add your current location.";
-    if (!destination.trim()) next.destination = "Add where you're going.";
+    if (!originLoc) next.origin = "Choose your current location.";
+    if (!destinationLoc) next.destination = "Choose where you're going.";
+    else if (originLoc && originLoc.id === destinationLoc.id)
+      next.destination = "Your current location and destination are the same. Choose a different destination.";
     if (!meetingPoint.trim()) next.meetingPoint = "Suggest a meeting point for your group.";
     setErrors(next);
     if (Object.keys(next).length === 0) setStep("time");
@@ -124,16 +98,12 @@ export function RideRequestPage({
     setSubmitError(null);
     try {
       const created = await createRideRequest({
-        originText: origin,
-        originLatitude: originCoords.latitude,
-        originLongitude: originCoords.longitude,
-        destinationText: destination,
+        originLocationId: originLoc!.id,
+        destinationLocationId: destinationLoc!.id,
         departureTime: useNow ? new Date().toISOString() : departure,
         meetingPointText: meetingPoint,
         partySize,
         rideType,
-        originPointId: originCoords.latitude === null ? pointIdFor(origin) : null,
-        destinationPointId: pointIdFor(destination),
       });
       await navigate({ to: "/student/rides/$id", params: { id: created.id } });
     } catch (error) {
@@ -170,7 +140,7 @@ export function RideRequestPage({
           <section className="mt-8">
             <ScreenHeader eyebrow="Ride request" title="Where are you going?" />
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Set your pickup point and destination around FUTA.
+              Choose your current location and destination from approved FUTAMOVE locations.
             </p>
 
             <div className="mt-7 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Ride type">
@@ -216,41 +186,33 @@ export function RideRequestPage({
               <p className="mt-2 text-xs leading-5 text-muted-foreground">A keke carries up to 4 passengers.</p>
             </div>
 
-            <datalist id="futa-points">
-              {FUTA_POINTS.map((p) => (
-                <option key={p.id} value={p.name} />
-              ))}
-            </datalist>
-
             <div className="surface-panel mt-7 p-2">
               <div className="relative">
                 <div className="journey-line" />
-                <RouteField
+                <LocationSelect
                   icon={LocateFixed}
                   id="origin"
                   label="Current location"
-                  placeholder="e.g. FUTA North Gate"
-                  list="futa-points"
-                  value={origin}
+                  locations={locations}
+                  loading={locationsQuery.isLoading}
+                  value={originLoc?.id ?? ""}
                   invalid={Boolean(errors.origin)}
-                  onChange={(value) => {
-                    setOrigin(value);
-                    setOriginCoords({ latitude: null, longitude: null });
-                  }}
+                  onChange={(v) => { setOriginId(v); setErrors((e) => ({ ...e, origin: undefined, destination: undefined })); }}
                 />
                 <div className="ml-14 h-px bg-border" />
-                <RouteField
+                <LocationSelect
                   icon={MapPin}
                   id="destination"
                   label="Destination"
-                  placeholder="e.g. Obanla"
-                  list="futa-points"
-                  value={destination}
+                  locations={locations}
+                  loading={locationsQuery.isLoading}
+                  value={destinationLoc?.id ?? ""}
                   invalid={Boolean(errors.destination)}
-                  onChange={setDestination}
+                  onChange={(v) => { setDestinationId(v); setErrors((e) => ({ ...e, destination: undefined })); }}
                 />
               </div>
             </div>
+            {locationsQuery.error && <FieldError>We couldn't load FUTAMOVE locations. Check your connection and try again.</FieldError>}
 
             {errors.origin && <FieldError>{errors.origin}</FieldError>}
             {errors.destination && <FieldError>{errors.destination}</FieldError>}
@@ -275,12 +237,6 @@ export function RideRequestPage({
               </p>
               {errors.meetingPoint && <FieldError>{errors.meetingPoint}</FieldError>}
             </div>
-
-            <Button variant="secondary" className="mt-4 w-full" onClick={detectLocation} disabled={locating}>
-              {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />}
-              {locating ? "Getting your location…" : "Use my current location"}
-            </Button>
-            {locationNote && <p className="mt-2 text-xs leading-5 text-muted-foreground">{locationNote}</p>}
 
             <Button size="lg" className="mt-7 w-full" onClick={continueFromRoute}>
               Continue
@@ -391,21 +347,21 @@ export function RideRequestPage({
   );
 }
 
-function RouteField({
+function LocationSelect({
   icon: Icon,
   id,
   label,
-  placeholder,
+  locations,
+  loading,
   value,
   onChange,
   invalid,
-  list,
 }: {
-  list?: string;
   icon: typeof MapPin;
   id: string;
   label: string;
-  placeholder: string;
+  locations: FutaLocation[];
+  loading: boolean;
   value: string;
   onChange: (value: string) => void;
   invalid?: boolean;
@@ -420,16 +376,28 @@ function RouteField({
       </span>
       <span className="min-w-0">
         <span className="block text-xs font-medium text-muted-foreground">{label}</span>
-        <Input
+        <select
           id={id}
           aria-label={label}
           aria-invalid={invalid ? true : undefined}
-          placeholder={placeholder}
-          list={list}
           value={value}
+          disabled={loading}
           onChange={(event) => onChange(event.target.value)}
-          className="h-7 border-0 bg-transparent p-0 text-[0.9375rem] font-medium shadow-none hover:border-0 focus-visible:border-0 focus-visible:ring-0"
-        />
+          className="h-7 w-full appearance-none bg-transparent text-[0.9375rem] font-medium focus-visible:outline-none"
+        >
+          <option value="">{loading ? "Loading locations…" : "Choose a location"}</option>
+          {CATEGORY_ORDER.map((cat) => {
+            const items = locations.filter((l) => l.category === cat);
+            if (!items.length) return null;
+            return (
+              <optgroup key={cat} label={CATEGORY_LABELS[cat]}>
+                {items.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </optgroup>
+            );
+          })}
+        </select>
       </span>
     </label>
   );

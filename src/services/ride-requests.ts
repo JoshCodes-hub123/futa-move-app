@@ -5,17 +5,12 @@ export type RideRequest = Tables<"ride_requests">;
 export type RideRequestStatus = RideRequest["status"];
 
 export interface RideRequestDraft {
-  originText: string;
-  originLatitude?: number | null;
-  originLongitude?: number | null;
-  destinationText: string;
-  destinationLatitude?: number | null;
-  destinationLongitude?: number | null;
+  /** Both come from the same unified locations table. The database snapshots name/coords into the text columns. */
+  originLocationId: string;
+  destinationLocationId: string;
   meetingPointText: string;
   partySize: number;
   rideType: "shared" | "private";
-  originPointId?: string | null;
-  destinationPointId?: string | null;
   /** ISO timestamp */
   departureTime: string;
 }
@@ -24,6 +19,9 @@ export class RideRequestError extends Error {}
 
 /** Creates a ride request for the signed-in student and puts it in the searching state. */
 export async function createRideRequest(draft: RideRequestDraft): Promise<RideRequest> {
+  if (draft.originLocationId === draft.destinationLocationId) {
+    throw new RideRequestError("Your current location and destination can't be the same. Choose a different destination.");
+  }
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) {
     throw new RideRequestError("You need to be signed in to request a ride.");
@@ -33,18 +31,15 @@ export async function createRideRequest(draft: RideRequestDraft): Promise<RideRe
     .from("ride_requests")
     .insert({
       student_id: auth.user.id,
-      origin_text: draft.originText.trim(),
-      origin_latitude: draft.originLatitude ?? null,
-      origin_longitude: draft.originLongitude ?? null,
-      destination_text: draft.destinationText.trim(),
-      destination_latitude: draft.destinationLatitude ?? null,
-      destination_longitude: draft.destinationLongitude ?? null,
+      origin_location_id: draft.originLocationId,
+      destination_location_id: draft.destinationLocationId,
+      // placeholders; the database trigger overwrites these with the location's name
+      origin_text: "-",
+      destination_text: "-",
       departure_time: draft.departureTime,
       meeting_point_text: draft.meetingPointText.trim(),
       party_size: draft.partySize,
       ride_type: draft.rideType,
-      origin_point_id: draft.originPointId ?? null,
-      destination_point_id: draft.destinationPointId ?? null,
       status: "searching",
     })
     .select()
@@ -83,31 +78,6 @@ export async function cancelRideRequest(id: string): Promise<RideRequest> {
   if (error || !data) throw new RideRequestError(error?.message ?? "We couldn't cancel this request.");
   return data;
 }
-
-/**
- * FUTA place record. Architecture supports coordinates, a representative image and a type,
- * but these stay null until the approved FUTA location dataset is confirmed — never invent them.
- */
-export type FutaPlace = {
-  id: string; // normalized location identity, used for exact point matching
-  name: string;
-  kind?: "gate" | "campus" | "hostel" | "town";
-  latitude?: number | null;
-  longitude?: number | null;
-  imageUrl?: string | null;
-  /** true until confirmed as an official FUTAMOVE pickup point */
-  provisional?: boolean;
-};
-
-/** PROVISIONAL names only (no coordinates). Picking one gives exact point matching. */
-export const FUTA_POINTS: FutaPlace[] = [
-  { id: "futa-north-gate", name: "FUTA North Gate" },
-  { id: "futa-south-gate", name: "FUTA South Gate" },
-  { id: "futa-sub", name: "Student Union Building (SUB)" },
-  { id: "obanla", name: "Obanla" },
-  { id: "obakekere", name: "Obakekere" },
-  { id: "futa-library", name: "FUTA Library" },
-];
 
 /* ---------- formatting helpers ---------- */
 
