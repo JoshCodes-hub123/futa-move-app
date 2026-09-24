@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
+  FUTA_POINTS,
   createRideRequest,
   formatDepartureTime,
   roundedSuggestions,
@@ -51,6 +52,9 @@ export function RideRequestPage({
   const [originCoords, setOriginCoords] = useState<Coords>({ latitude: null, longitude: null });
   const [destination, setDestination] = useState(initialDestination);
   const [meetingPoint, setMeetingPoint] = useState("");
+  const [rideType, setRideType] = useState<"shared" | "private">("shared");
+  const [partySize, setPartySize] = useState(1);
+  const pointIdFor = (text: string) => FUTA_POINTS.find((p) => p.name.toLowerCase() === text.trim().toLowerCase())?.id ?? null;
   const [departure, setDeparture] = useState<string>(new Date().toISOString());
   const [useNow, setUseNow] = useState(true);
 
@@ -126,6 +130,10 @@ export function RideRequestPage({
         destinationText: destination,
         departureTime: useNow ? new Date().toISOString() : departure,
         meetingPointText: meetingPoint,
+        partySize,
+        rideType,
+        originPointId: originCoords.latitude === null ? pointIdFor(origin) : null,
+        destinationPointId: pointIdFor(destination),
       });
       await navigate({ to: "/student/rides/$id", params: { id: created.id } });
     } catch (error) {
@@ -165,6 +173,55 @@ export function RideRequestPage({
               Set your pickup point and destination around FUTA.
             </p>
 
+            <div className="mt-7 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Ride type">
+              {(["shared", "private"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  role="radio"
+                  aria-checked={rideType === type}
+                  onClick={() => setRideType(type)}
+                  className={cn(
+                    "rounded-lg border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    rideType === type ? "border-brand bg-brand/10" : "border-border hover:bg-muted/50",
+                  )}
+                >
+                  <span className="block text-sm font-semibold">{type === "shared" ? "Shared ride" : "Private keke"}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {type === "shared" ? "Split with verified students" : "Just your party, no matching"}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-5">
+              <p className="text-[0.8125rem] font-medium">How many people?</p>
+              <div className="mt-2 grid grid-cols-4 gap-2" role="radiogroup" aria-label="Party size">
+                {[1, 2, 3, 4].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    role="radio"
+                    aria-checked={partySize === n}
+                    onClick={() => setPartySize(n)}
+                    className={cn(
+                      "h-11 rounded-lg border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                      partySize === n ? "border-brand bg-brand/10" : "border-border hover:bg-muted/50",
+                    )}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">A keke carries up to 4 passengers.</p>
+            </div>
+
+            <datalist id="futa-points">
+              {FUTA_POINTS.map((p) => (
+                <option key={p.id} value={p.name} />
+              ))}
+            </datalist>
+
             <div className="surface-panel mt-7 p-2">
               <div className="relative">
                 <div className="journey-line" />
@@ -172,7 +229,8 @@ export function RideRequestPage({
                   icon={LocateFixed}
                   id="origin"
                   label="Current location"
-                  placeholder="e.g. FUTA Main Gate"
+                  placeholder="e.g. FUTA North Gate"
+                  list="futa-points"
                   value={origin}
                   invalid={Boolean(errors.origin)}
                   onChange={(value) => {
@@ -186,6 +244,7 @@ export function RideRequestPage({
                   id="destination"
                   label="Destination"
                   placeholder="e.g. Obanla"
+                  list="futa-points"
                   value={destination}
                   invalid={Boolean(errors.destination)}
                   onChange={setDestination}
@@ -303,6 +362,9 @@ export function RideRequestPage({
                 departure={useNow ? new Date().toISOString() : departure}
                 meetingPoint={meetingPoint}
               />
+              <p className="mt-3 text-sm text-muted-foreground">
+                {rideType === "shared" ? "Shared ride" : "Private keke"} · {partySize} {partySize === 1 ? "person" : "people"}
+              </p>
             </div>
 
             {submitError && (
@@ -313,7 +375,7 @@ export function RideRequestPage({
 
             <Button size="lg" className="mt-7 w-full" onClick={submit} disabled={submitting}>
               {submitting ? <Loader2 className="animate-spin" /> : <Users />}
-              {submitting ? "Creating your request…" : "Find students"}
+              {submitting ? "Creating your request…" : rideType === "shared" ? "Find students" : "Save request"}
             </Button>
             <Button variant="secondary" size="lg" className="mt-3 w-full" onClick={() => setStep("route")} disabled={submitting}>
               <Pencil /> Edit
@@ -337,7 +399,9 @@ function RouteField({
   value,
   onChange,
   invalid,
+  list,
 }: {
+  list?: string;
   icon: typeof MapPin;
   id: string;
   label: string;
@@ -361,6 +425,7 @@ function RouteField({
           aria-label={label}
           aria-invalid={invalid ? true : undefined}
           placeholder={placeholder}
+          list={list}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className="h-7 border-0 bg-transparent p-0 text-[0.9375rem] font-medium shadow-none hover:border-0 focus-visible:border-0 focus-visible:ring-0"

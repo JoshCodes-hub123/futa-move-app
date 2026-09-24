@@ -15,6 +15,13 @@
       "when": 1790226158768,
       "tag": "0001_student_matching_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790253114814,
+      "tag": "0002_phase_1b_capacity_verification_pickup",
+      "breakpoints": true
     }
   ]
 }

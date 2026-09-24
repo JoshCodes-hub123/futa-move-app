@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight, Loader2, Navigation, Plus, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Loader2, Navigation, Plus, ShieldCheck, UserPlus, XCircle } from "lucide-react";
 import { AppShell } from "@/components/futamove/app-shell";
 import { ConfirmationDialog } from "@/components/futamove/confirmation-dialog";
 import { EmptyState, ErrorState, LoadingState, ScreenHeader, SectionHeading, TrustNote } from "@/components/futamove/primitives";
@@ -14,6 +15,7 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
+import { KEKE_CAPACITY, addGroupMember, agreeMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
 
@@ -37,7 +39,7 @@ function RequestRow({ request }: { request: RideRequest }) {
     >
       <div className="min-w-0 flex-1">
         <p className="section-label mb-2">
-          {request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
+          {request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
         </p>
         <p className="truncate text-sm font-semibold">{request.origin_text}</p>
         <p className="truncate text-sm font-semibold text-muted-foreground">↓ {request.destination_text}</p>
@@ -142,6 +144,9 @@ export function RideRequestDetailPage({ id }: { id: string }) {
     },
   });
 
+  const isSearching = data?.status === "searching";
+  const isShared = data?.ride_type === "shared";
+
   return (
     <AppShell role="student">
       <div className="mx-auto w-full max-w-md lg:max-w-lg">
@@ -174,18 +179,15 @@ export function RideRequestDetailPage({ id }: { id: string }) {
 
         {data && (
           <section className="mt-8">
-            {data.status === "searching" ? (
+            {isSearching && data.group_id ? (
+              <GroupPanel groupId={data.group_id} requestId={id} />
+            ) : isSearching && isShared ? (
+              <MatchingPanel requestId={id} partySize={data.party_size} />
+            ) : isSearching ? (
               <>
-                <div className="flex justify-center py-4">
-                  <span className="relative grid size-16 place-items-center">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-brand/25" />
-                    <span className="absolute inset-2 rounded-full bg-brand/15" />
-                    <Loader2 className="relative size-6 animate-spin text-brand-strong" strokeWidth={2} />
-                  </span>
-                </div>
-                <h1 className="display-title mt-4 text-center text-[2rem]">Finding your people</h1>
-                <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-muted-foreground">
-                  We're looking for verified FUTA students heading your way.
+                <h1 className="display-title text-[2rem]">Private keke request saved</h1>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  This request is just for your party, so there's no student matching. Rider search arrives in a later phase.
                 </p>
               </>
             ) : (
@@ -197,17 +199,24 @@ export function RideRequestDetailPage({ id }: { id: string }) {
               </>
             )}
 
-            <div className="mt-8 flex justify-center">
-              <StatusPill status={data.status} />
-            </div>
-
-            <div className="mt-6">
-              <RouteSummary
-                origin={data.origin_text}
-                destination={data.destination_text}
-                departure={data.departure_time}
-              />
-            </div>
+            {!data.group_id && (
+              <>
+                <div className="mt-8 flex justify-center">
+                  <StatusPill status={data.status} />
+                </div>
+                <div className="mt-6">
+                  <RouteSummary
+                    origin={data.origin_text}
+                    destination={data.destination_text}
+                    departure={data.departure_time}
+                    meetingPoint={data.meeting_point_text}
+                  />
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {isShared ? "Shared ride" : "Private keke"} · {data.party_size} {data.party_size === 1 ? "person" : "people"}
+                  </p>
+                </div>
+              </>
+            )}
 
             {cancel.isError && (
               <p className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">
@@ -215,7 +224,7 @@ export function RideRequestDetailPage({ id }: { id: string }) {
               </p>
             )}
 
-            {data.status === "searching" && (
+            {isSearching && (
               <div className="mt-7">
                 <ConfirmationDialog
                   trigger={
@@ -225,21 +234,230 @@ export function RideRequestDetailPage({ id }: { id: string }) {
                     </Button>
                   }
                   title="Cancel this ride request?"
-                  description="We'll stop looking for students heading your way. You can always create a new request."
+                  description={
+                    data.group_id
+                      ? "You'll leave your group and we'll stop looking for students. The rest of the group stays together if at least two remain."
+                      : "We'll stop looking for students heading your way. You can always create a new request."
+                  }
                   confirmLabel="Cancel request"
                   onConfirm={() => cancel.mutate()}
                 />
               </div>
             )}
-
-            <div className="mt-7">
-              <TrustNote>
-                Student matching arrives in the next phase — your request is saved and waiting.
-              </TrustNote>
-            </div>
           </section>
         )}
       </div>
     </AppShell>
+  );
+}
+
+function MatchingPanel({ requestId, partySize }: { requestId: string; partySize: number }) {
+  const queryClient = useQueryClient();
+  const match = useQuery({
+    queryKey: ["ride-match", requestId],
+    queryFn: () => matchRideRequest(requestId),
+    refetchInterval: (query) => (query.state.data?.group_id || query.state.data?.eligible === false ? false : 6000),
+  });
+
+  const groupId = match.data?.group_id;
+  useEffect(() => {
+    if (groupId) void queryClient.invalidateQueries({ queryKey: rideRequestsKey });
+  }, [groupId, queryClient]);
+
+  if (match.data && !match.data.eligible) {
+    return (
+      <>
+        <div className="flex justify-center py-4">
+          <span className="grid size-16 place-items-center rounded-full bg-muted text-muted-foreground">
+            <ShieldCheck className="size-6" strokeWidth={1.75} />
+          </span>
+        </div>
+        <h1 className="display-title mt-4 text-center text-[2rem]">Verification needed</h1>
+        <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-muted-foreground">
+          Only verified FUTA students can be matched into shared rides. Your request is saved and will start matching once you're verified.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <Button asChild variant="secondary">
+            <Link to="/verification">Submit verification</Link>
+          </Button>
+        </div>
+      </>
+    );
+  }
+
+  const found = match.data?.compatible_count ?? 0;
+  return (
+    <>
+      <div className="flex justify-center py-4">
+        <span className="relative grid size-16 place-items-center">
+          <span className="absolute inset-0 animate-ping rounded-full bg-brand/25" />
+          <span className="absolute inset-2 rounded-full bg-brand/15" />
+          <Loader2 className="relative size-6 animate-spin text-brand-strong" strokeWidth={2} />
+        </span>
+      </div>
+      <h1 className="display-title mt-4 text-center text-[2rem]">Finding your people</h1>
+      <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-muted-foreground">
+        We're looking for verified FUTA students with the same pickup, destination and time.
+      </p>
+      <div className="mx-auto mt-6 max-w-xs">
+        <SeatMeter filled={partySize} capacity={KEKE_CAPACITY} />
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          {match.isError
+            ? "We couldn't check for matches just now. Retrying…"
+            : found > 0
+              ? `${found} compatible ${found === 1 ? "student" : "students"} found — checking seats…`
+              : `Your party: ${partySize} of ${KEKE_CAPACITY} seats · still searching`}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function SeatMeter({ filled, capacity }: { filled: number; capacity: number }) {
+  return (
+    <div className="flex gap-1.5" aria-label={`${filled} of ${capacity} seats filled`}>
+      {Array.from({ length: capacity }).map((_, i) => (
+        <span key={i} className={i < filled ? "h-1.5 flex-1 rounded-full bg-brand transition-colors" : "h-1.5 flex-1 rounded-full bg-muted transition-colors"} />
+      ))}
+    </div>
+  );
+}
+
+function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string }) {
+  const queryClient = useQueryClient();
+  const [note, setNote] = useState<string | null>(null);
+  const group = useQuery({
+    queryKey: ["ride-group", groupId],
+    queryFn: () => getRideGroup(groupId),
+    refetchInterval: 6000,
+  });
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["ride-group", groupId] });
+    await queryClient.invalidateQueries({ queryKey: rideRequestsKey });
+  };
+
+  const agree = useMutation({ mutationFn: () => agreeMeetingPoint(groupId), onSuccess: refresh });
+  const addMember = useMutation({
+    mutationFn: () => addGroupMember(groupId),
+    onSuccess: async (result) => {
+      setNote(
+        result.added
+          ? "A compatible student joined your group."
+          : result.reason === "full"
+            ? "Your keke is full."
+            : "No compatible student with enough seats is available right now. Try again shortly.",
+      );
+      await refresh();
+    },
+  });
+  const leave = useMutation({
+    mutationFn: () => leaveRideGroup(groupId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["ride-match", requestId] });
+      await refresh();
+    },
+  });
+
+  if (group.isLoading) return <LoadingState />;
+  if (group.isError || !group.data) return <ErrorState message="We couldn't load your group." />;
+
+  const g = group.data;
+  const me = g.members.find((m) => m.is_me);
+  const ready = g.status === "ready";
+  const seatsLeft = g.capacity - g.passenger_count;
+  const waitingOn = g.members.filter((m) => !m.meeting_point_agreed).length;
+  const error = agree.error ?? addMember.error ?? leave.error;
+
+  return (
+    <>
+      <p className="section-label">Temporary group</p>
+      <h1 className="display-title mt-2 text-[2rem]">{ready ? "Your group is ready" : "Your group is forming"}</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        {ready
+          ? "Everyone agreed on the meeting point. Rider search arrives in the next phase — nothing is booked yet."
+          : `Waiting for ${waitingOn} ${waitingOn === 1 ? "member" : "members"} to agree on the meeting point.`}
+      </p>
+
+      <div className="mt-6 flex items-center justify-between">
+        <Badge variant={ready ? "success" : "warning"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
+          <span className={ready ? "size-1.5 rounded-full bg-success" : "size-1.5 animate-pulse rounded-full bg-warning"} />
+          {ready ? "Group ready" : "Waiting for members"}
+        </Badge>
+        <span className="text-sm font-semibold">
+          {g.passenger_count} of {g.capacity} seats
+        </span>
+      </div>
+      <div className="mt-3">
+        <SeatMeter filled={g.passenger_count} capacity={g.capacity} />
+      </div>
+
+      <div className="mt-6">
+        <RouteSummary origin={g.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
+      </div>
+
+      <section className="mt-8">
+        <SectionHeading title="Members" detail={`${g.members.length} ${g.members.length === 1 ? "request" : "requests"}`} />
+        <div className="mt-2 divider-list">
+          {g.members.map((m, index) => (
+            <div key={`${m.joined_at}-${index}`} className="flex items-center gap-3 py-3.5">
+              <span className="grid size-10 place-items-center rounded-full bg-dark-surface text-sm font-bold text-dark-foreground">
+                {m.first_name.charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  {m.is_me ? "You" : m.first_name}
+                  {m.party_size > 1 && <span className="font-normal text-muted-foreground"> +{m.party_size - 1}</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {m.is_organizer ? "Suggested the meeting point" : "Verified FUTA student"}
+                </p>
+              </div>
+              {m.meeting_point_agreed ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                  <CheckCircle2 className="size-4" strokeWidth={2} /> Agreed
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">Pending</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {error && (
+        <p className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">
+          {error instanceof Error ? error.message : "Something went wrong. Try again."}
+        </p>
+      )}
+      {note && <p className="mt-5 text-sm text-muted-foreground">{note}</p>}
+
+      <div className="mt-7 grid gap-3">
+        {me && !me.meeting_point_agreed && (
+          <Button size="lg" className="w-full" onClick={() => agree.mutate()} disabled={agree.isPending}>
+            {agree.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
+            {agree.isPending ? "Saving…" : `Agree to meet at ${g.meeting_point_text}`}
+          </Button>
+        )}
+        {seatsLeft > 0 ? (
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => addMember.mutate()} disabled={addMember.isPending}>
+            {addMember.isPending ? <Loader2 className="animate-spin" /> : <UserPlus />}
+            {addMember.isPending ? "Looking…" : `Find another student (${seatsLeft} ${seatsLeft === 1 ? "seat" : "seats"} left)`}
+          </Button>
+        ) : (
+          <p className="text-center text-sm text-muted-foreground">This keke is full — 4 passengers is the limit.</p>
+        )}
+        <ConfirmationDialog
+          trigger={
+            <Button variant="ghost" className="w-full" disabled={leave.isPending}>
+              {leave.isPending ? "Leaving…" : "Leave group"}
+            </Button>
+          }
+          title="Leave this group?"
+          description="Your request goes back to searching. The group stays together if at least two requests remain."
+          confirmLabel="Leave group"
+          onConfirm={() => leave.mutate()}
+        />
+      </div>
+    </>
   );
 }

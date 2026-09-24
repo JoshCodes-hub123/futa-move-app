@@ -95,13 +95,17 @@ export type Database = {
           departure_time: string
           destination_latitude: number | null
           destination_longitude: number | null
+          destination_point_id: string | null
           destination_text: string
           group_id: string | null
           id: string
           meeting_point_text: string | null
           origin_latitude: number | null
           origin_longitude: number | null
+          origin_point_id: string | null
           origin_text: string
+          party_size: number
+          ride_type: string
           status: Database["public"]["Enums"]["ride_request_status"]
           student_id: string
           updated_at: string
@@ -111,13 +115,17 @@ export type Database = {
           departure_time: string
           destination_latitude?: number | null
           destination_longitude?: number | null
+          destination_point_id?: string | null
           destination_text: string
           group_id?: string | null
           id?: string
           meeting_point_text?: string | null
           origin_latitude?: number | null
           origin_longitude?: number | null
+          origin_point_id?: string | null
           origin_text: string
+          party_size?: number
+          ride_type?: string
           status?: Database["public"]["Enums"]["ride_request_status"]
           student_id?: string
           updated_at?: string
@@ -127,13 +135,17 @@ export type Database = {
           departure_time?: string
           destination_latitude?: number | null
           destination_longitude?: number | null
+          destination_point_id?: string | null
           destination_text?: string
           group_id?: string | null
           id?: string
           meeting_point_text?: string | null
           origin_latitude?: number | null
           origin_longitude?: number | null
+          origin_point_id?: string | null
           origin_text?: string
+          party_size?: number
+          ride_type?: string
           status?: Database["public"]["Enums"]["ride_request_status"]
           student_id?: string
           updated_at?: string
@@ -148,6 +160,39 @@ export type Database = {
           },
         ]
       }
+      student_profiles: {
+        Row: {
+          created_at: string
+          faculty: string | null
+          full_name: string | null
+          id: string
+          matric_number: string | null
+          updated_at: string
+          verification_status: Database["public"]["Enums"]["student_verification_status"]
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          faculty?: string | null
+          full_name?: string | null
+          id: string
+          matric_number?: string | null
+          updated_at?: string
+          verification_status?: Database["public"]["Enums"]["student_verification_status"]
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          faculty?: string | null
+          full_name?: string | null
+          id?: string
+          matric_number?: string | null
+          updated_at?: string
+          verification_status?: Database["public"]["Enums"]["student_verification_status"]
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -159,21 +204,63 @@ export type Database = {
         Args: { _a: string; _b: string }
         Returns: boolean
       }
+      dropoff_radius_m: { Args: never; Returns: number }
+      geo_distance_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       get_ride_group: { Args: { p_group_id: string }; Returns: Json }
+      group_passenger_count: { Args: { _group_id: string }; Returns: number }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_verified_student: { Args: { _user_id: string }; Returns: boolean }
+      leave_ride_group: { Args: { p_group_id: string }; Returns: undefined }
       match_ride_request: { Args: { p_request_id: string }; Returns: Json }
+      match_time_tolerance: { Args: never; Returns: string }
       normalize_place: { Args: { _t: string }; Returns: string }
       pick_compatible_requests: {
-        Args: { _exclude: string[]; _limit: number; _ref: string }
+        Args: {
+          _exclude: string[]
+          _group_id: string
+          _ref: string
+          _seats: number
+        }
         Returns: string[]
       }
+      pickup_radius_m: { Args: never; Returns: number }
+      places_compatible: {
+        Args: {
+          a_id: string
+          a_lat: number
+          a_lng: number
+          a_text: string
+          b_id: string
+          b_lat: number
+          b_lng: number
+          b_text: string
+          radius_m: number
+        }
+        Returns: boolean
+      }
       refresh_group_status: { Args: { _group_id: string }; Returns: undefined }
+      release_request_from_group: {
+        Args: { _group_id: string; _request_id: string }
+        Returns: undefined
+      }
+      requests_compatible: {
+        Args: {
+          a: Database["public"]["Tables"]["ride_requests"]["Row"]
+          b: Database["public"]["Tables"]["ride_requests"]["Row"]
+        }
+        Returns: boolean
+      }
+      ride_capacity: { Args: never; Returns: number }
     }
     Enums: {
       ride_request_status: "draft" | "searching" | "cancelled"
+      student_verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -302,6 +389,7 @@ export const Constants = {
   public: {
     Enums: {
       ride_request_status: ["draft", "searching", "cancelled"],
+      student_verification_status: ["pending", "verified", "rejected"],
     },
   },
 } as const
