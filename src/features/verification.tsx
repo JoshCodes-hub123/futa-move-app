@@ -12,7 +12,7 @@ import { getMyStudentProfile, submitVerification, validateImage, VERIFICATION_LA
 
 type Errors = Partial<Record<"fullName" | "matric" | "faculty" | "avatar" | "idCard" | "form", string>>;
 
-function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round }: { id: string; label: string; hint: string; icon: typeof Camera; file: File | null; onChange: (f: File | null) => void; error?: string; round?: boolean }) {
+function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round }: { id: string; label: string; hint: string; icon: typeof Camera; file: File | null; onChange: (f: File | null) => void; error?: string | undefined; round?: boolean }) {
   const [preview, setPreview] = useState<string | null>(null);
   useEffect(() => {
     if (!file) { setPreview(null); return; }
@@ -32,7 +32,7 @@ function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round
         </span>
       </label>
       <input id={id} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-invalid={!!error} onChange={(e) => onChange(e.target.files?.[0] ?? null)} />
-      <FieldError message={error} />
+      {error && <FieldError>{error}</FieldError>}
     </div>
   );
 }
@@ -112,9 +112,9 @@ export function VerificationPage() {
           <form onSubmit={submit} noValidate>
             <div className="space-y-5">
               <ImagePicker id="avatar" label="Profile photo" hint="A clear photo of your face" icon={Camera} file={avatar} onChange={setAvatar} error={errors.avatar} round />
-              <div><Label htmlFor="fullName" className="text-[0.8125rem] font-medium">Full name</Label><Input id="fullName" className="mt-2" value={fullName} aria-invalid={!!errors.fullName} onChange={(e) => setFullName(e.target.value)} /><FieldError message={errors.fullName} /></div>
-              <div><Label htmlFor="matric" className="text-[0.8125rem] font-medium">Matric number</Label><Input id="matric" placeholder="e.g. MEE/20/0000" className="mt-2" value={matric} aria-invalid={!!errors.matric} onChange={(e) => setMatric(e.target.value)} /><FieldError message={errors.matric} /></div>
-              <div><Label htmlFor="faculty" className="text-[0.8125rem] font-medium">Faculty</Label><Input id="faculty" placeholder="Your faculty" className="mt-2" value={faculty} aria-invalid={!!errors.faculty} onChange={(e) => setFaculty(e.target.value)} /><FieldError message={errors.faculty} /></div>
+              <div><Label htmlFor="fullName" className="text-[0.8125rem] font-medium">Full name</Label><Input id="fullName" className="mt-2" value={fullName} aria-invalid={!!errors.fullName} onChange={(e) => setFullName(e.target.value)} />{errors.fullName && <FieldError>{errors.fullName}</FieldError>}</div>
+              <div><Label htmlFor="matric" className="text-[0.8125rem] font-medium">Matric number</Label><Input id="matric" placeholder="e.g. MEE/20/0000" className="mt-2" value={matric} aria-invalid={!!errors.matric} onChange={(e) => setMatric(e.target.value)} />{errors.matric && <FieldError>{errors.matric}</FieldError>}</div>
+              <div><Label htmlFor="faculty" className="text-[0.8125rem] font-medium">Faculty</Label><Input id="faculty" placeholder="Your faculty" className="mt-2" value={faculty} aria-invalid={!!errors.faculty} onChange={(e) => setFaculty(e.target.value)} />{errors.faculty && <FieldError>{errors.faculty}</FieldError>}</div>
               <ImagePicker id="idCard" label="FUTA student ID card" hint="Photo of the front of your ID card" icon={IdCard} file={idCard} onChange={setIdCard} error={errors.idCard} />
             </div>
             {errors.form && <p role="alert" className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">{errors.form}</p>}
