@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      locations: {
+        Row: {
+          active: boolean
+          category: Database["public"]["Enums"]["location_category"]
+          created_at: string
+          description: string | null
+          display_order: number
+          google_place_id: string | null
+          id: string
+          image_url: string | null
+          latitude: number | null
+          location_type: string
+          longitude: number | null
+          name: string
+          official_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: Database["public"]["Enums"]["location_category"]
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          google_place_id?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location_type: string
+          longitude?: number | null
+          name: string
+          official_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: Database["public"]["Enums"]["location_category"]
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          google_place_id?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location_type?: string
+          longitude?: number | null
+          name?: string
+          official_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ride_group_members: {
         Row: {
           group_id: string
@@ -94,6 +145,7 @@ export type Database = {
           created_at: string
           departure_time: string
           destination_latitude: number | null
+          destination_location_id: string | null
           destination_longitude: number | null
           destination_point_id: string | null
           destination_text: string
@@ -101,6 +153,7 @@ export type Database = {
           id: string
           meeting_point_text: string | null
           origin_latitude: number | null
+          origin_location_id: string | null
           origin_longitude: number | null
           origin_point_id: string | null
           origin_text: string
@@ -114,6 +167,7 @@ export type Database = {
           created_at?: string
           departure_time: string
           destination_latitude?: number | null
+          destination_location_id?: string | null
           destination_longitude?: number | null
           destination_point_id?: string | null
           destination_text: string
@@ -121,6 +175,7 @@ export type Database = {
           id?: string
           meeting_point_text?: string | null
           origin_latitude?: number | null
+          origin_location_id?: string | null
           origin_longitude?: number | null
           origin_point_id?: string | null
           origin_text: string
@@ -134,6 +189,7 @@ export type Database = {
           created_at?: string
           departure_time?: string
           destination_latitude?: number | null
+          destination_location_id?: string | null
           destination_longitude?: number | null
           destination_point_id?: string | null
           destination_text?: string
@@ -141,6 +197,7 @@ export type Database = {
           id?: string
           meeting_point_text?: string | null
           origin_latitude?: number | null
+          origin_location_id?: string | null
           origin_longitude?: number | null
           origin_point_id?: string | null
           origin_text?: string
@@ -152,10 +209,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ride_requests_destination_location_id_fkey"
+            columns: ["destination_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ride_requests_group_fk"
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "ride_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_origin_location_id_fkey"
+            columns: ["origin_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -367,6 +438,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      location_category: "GATE" | "ACADEMIC" | "HOSTEL"
       ride_request_status: "draft" | "searching" | "cancelled"
       student_verification_status: "pending" | "verified" | "rejected"
     }
@@ -497,6 +569,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      location_category: ["GATE", "ACADEMIC", "HOSTEL"],
       ride_request_status: ["draft", "searching", "cancelled"],
       student_verification_status: ["pending", "verified", "rejected"],
     },
