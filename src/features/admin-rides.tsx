@@ -19,7 +19,7 @@ const FILTERS: { key: string; label: string; match: (s: string) => boolean }[] =
   { key: "all", label: "All", match: () => true },
 ];
 
-function TripCard({ t, riderName, onChanged }: { t: Trip; riderName?: string; onChanged: () => Promise<void> }) {
+function TripCard({ t, riderName, onChanged }: { t: Trip; riderName?: string | undefined; onChanged: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [rider, setRider] = useState("");
   const [outcome, setOutcome] = useState<"cancelled_by_admin" | "no_show" | "expired">("cancelled_by_admin");

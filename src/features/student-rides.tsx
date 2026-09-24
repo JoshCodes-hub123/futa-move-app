@@ -34,7 +34,7 @@ function StatusPill({ status }: { status: RideRequest["status"] }) {
   );
 }
 
-function RequestRow({ request, trip }: { request: RideRequest; trip?: TripStatus }) {
+function RequestRow({ request, trip }: { request: RideRequest; trip?: TripStatus | undefined }) {
   return (
     <Link
       to="/student/rides/$id"

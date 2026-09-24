@@ -26,6 +26,7 @@ import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminLocationSuggestionsRouteImport } from './routes/_authenticated/admin.location-suggestions'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
 import { Route as AuthenticatedAdminRidersRouteImport } from './routes/_authenticated/admin.riders'
+import { Route as AuthenticatedAdminRidesRouteImport } from './routes/_authenticated/admin.rides'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminVerificationRouteImport } from './routes/_authenticated/admin.verification'
 import { Route as AuthenticatedRiderHomeRouteImport } from './routes/_authenticated/rider.home'
@@ -131,6 +132,11 @@ const AuthenticatedAdminRidersRoute =
     path: '/riders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminRidesRoute = AuthenticatedAdminRidesRouteImport.update({
+  id: '/rides',
+  path: '/rides',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -237,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/riders': typeof AuthenticatedAdminRidersRoute
+  '/admin/rides': typeof AuthenticatedAdminRidesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/rider/home': typeof AuthenticatedRiderHomeRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/riders': typeof AuthenticatedAdminRidersRoute
+  '/admin/rides': typeof AuthenticatedAdminRidesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/rider/home': typeof AuthenticatedRiderHomeRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/riders': typeof AuthenticatedAdminRidersRoute
+  '/_authenticated/admin/rides': typeof AuthenticatedAdminRidesRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/_authenticated/rider/home': typeof AuthenticatedRiderHomeRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/admin/location-suggestions'
     | '/admin/locations'
     | '/admin/riders'
+    | '/admin/rides'
     | '/admin/settings'
     | '/admin/verification'
     | '/rider/home'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/admin/location-suggestions'
     | '/admin/locations'
     | '/admin/riders'
+    | '/admin/rides'
     | '/admin/settings'
     | '/admin/verification'
     | '/rider/home'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/location-suggestions'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/riders'
+    | '/_authenticated/admin/rides'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/verification'
     | '/_authenticated/rider/home'
@@ -557,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRidersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/rides': {
+      id: '/_authenticated/admin/rides'
+      path: '/rides'
+      fullPath: '/admin/rides'
+      preLoaderRoute: typeof AuthenticatedAdminRidesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -669,6 +688,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminLocationSuggestionsRoute: typeof AuthenticatedAdminLocationSuggestionsRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminRidersRoute: typeof AuthenticatedAdminRidersRoute
+  AuthenticatedAdminRidesRoute: typeof AuthenticatedAdminRidesRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
 }
@@ -678,6 +698,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
     AuthenticatedAdminLocationSuggestionsRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
   AuthenticatedAdminRidersRoute: AuthenticatedAdminRidersRoute,
+  AuthenticatedAdminRidesRoute: AuthenticatedAdminRidesRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
 }
