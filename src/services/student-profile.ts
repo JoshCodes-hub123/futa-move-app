@@ -81,6 +81,6 @@ export async function listPendingSubmissions(): Promise<VerificationSubmission[]
 }
 
 export async function reviewSubmission(id: string, approve: boolean, reason?: string) {
-  const { error } = await supabase.rpc("review_verification", { p_submission_id: id, p_approve: approve, p_reason: reason ?? undefined });
+  const { error } = await supabase.rpc("review_verification", { p_submission_id: id, p_approve: approve, ...(reason ? { p_reason: reason } : {}) });
   if (error) throw new Error(error.message);
 }
