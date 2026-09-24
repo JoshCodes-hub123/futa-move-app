@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      ride_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          meeting_point_agreed: boolean
+          request_id: string
+          student_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          meeting_point_agreed?: boolean
+          request_id: string
+          student_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          meeting_point_agreed?: boolean
+          request_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "ride_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_group_members_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          departure_time: string
+          destination_text: string
+          id: string
+          meeting_point_text: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          departure_time: string
+          destination_text: string
+          id?: string
+          meeting_point_text: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          departure_time?: string
+          destination_text?: string
+          id?: string
+          meeting_point_text?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ride_requests: {
         Row: {
           created_at: string
@@ -21,7 +96,9 @@ export type Database = {
           destination_latitude: number | null
           destination_longitude: number | null
           destination_text: string
+          group_id: string | null
           id: string
+          meeting_point_text: string | null
           origin_latitude: number | null
           origin_longitude: number | null
           origin_text: string
@@ -35,7 +112,9 @@ export type Database = {
           destination_latitude?: number | null
           destination_longitude?: number | null
           destination_text: string
+          group_id?: string | null
           id?: string
+          meeting_point_text?: string | null
           origin_latitude?: number | null
           origin_longitude?: number | null
           origin_text: string
@@ -49,7 +128,9 @@ export type Database = {
           destination_latitude?: number | null
           destination_longitude?: number | null
           destination_text?: string
+          group_id?: string | null
           id?: string
+          meeting_point_text?: string | null
           origin_latitude?: number | null
           origin_longitude?: number | null
           origin_text?: string
@@ -57,14 +138,39 @@ export type Database = {
           student_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ride_requests_group_fk"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "ride_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_group_member: { Args: { p_group_id: string }; Returns: Json }
+      agree_meeting_point: { Args: { p_group_id: string }; Returns: undefined }
+      destinations_compatible: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
+      }
+      get_ride_group: { Args: { p_group_id: string }; Returns: Json }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      match_ride_request: { Args: { p_request_id: string }; Returns: Json }
+      normalize_place: { Args: { _t: string }; Returns: string }
+      pick_compatible_requests: {
+        Args: { _exclude: string[]; _limit: number; _ref: string }
+        Returns: string[]
+      }
+      refresh_group_status: { Args: { _group_id: string }; Returns: undefined }
     }
     Enums: {
       ride_request_status: "draft" | "searching" | "cancelled"
