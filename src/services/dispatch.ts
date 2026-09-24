@@ -23,6 +23,15 @@ export async function setMyAvailability(status: Availability) {
   const { error } = await supabase.rpc("set_my_availability", { p_status: status });
   fail(error);
 }
+/** Shares the rider's real device position (only while online) so dispatch can prefer closer riders. */
+export async function shareMyLocation(): Promise<void> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) return;
+  const pos = await new Promise<GeolocationPosition | null>((resolve) =>
+    navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }),
+  );
+  if (!pos) return;
+  await supabase.rpc("set_my_location", { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_accuracy: pos.coords.accuracy });
+}
 export interface RideOffer {
   offer_id: string; trip_id: string; meeting_point_text: string; meeting_point_note: string | null; destination_text: string;
   departure_time: string; passenger_count: number; member_count: number; offered_at: string; expires_at: string;
