@@ -10,7 +10,7 @@ export function ScreenHeader({ eyebrow, title, action }: { eyebrow?: string; tit
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
       <div className="min-w-0">
         {eyebrow && <p className="section-label mb-1.5">{eyebrow}</p>}
-        <h1 className="truncate text-[1.75rem] font-bold tracking-tight text-foreground">{title}</h1>
+        <h1 className="truncate font-display text-[2rem] font-bold uppercase leading-none text-foreground sm:text-[2.25rem]">{title}</h1>
       </div>
       {action}
     </header>
@@ -38,10 +38,10 @@ export function StatusBadge({ status }: { status: "Verified" | "Pending" | "Read
 export function EmptyState({ icon: Icon = Inbox, title, description, action, compact = false }: { icon?: LucideIcon; title: string; description: string; action?: React.ReactNode; compact?: boolean }) {
   return (
     <div className={cn("flex flex-col items-center justify-center px-6 text-center", compact ? "py-10" : "py-16")}>
-      <div className="mb-4 grid size-11 place-items-center rounded-full bg-muted text-muted-foreground">
+      <div className="mb-4 grid size-11 place-items-center rounded-md bg-muted text-muted-foreground">
         <Icon className="size-[18px]" strokeWidth={1.75} />
       </div>
-      <h2 className="text-[0.9375rem] font-semibold tracking-tight text-foreground">{title}</h2>
+      <h2 className="text-[0.9375rem] font-semibold text-foreground">{title}</h2>
       <p className="mt-1.5 max-w-[17rem] text-sm leading-6 text-muted-foreground">{description}</p>
       {action && <div className="mt-6">{action}</div>}
     </div>
@@ -94,7 +94,7 @@ export function RowLink({ icon: Icon, title, description, onClick }: { icon: Luc
       onClick={onClick}
       className="group flex w-full items-center gap-3.5 rounded-lg px-1 py-3.5 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-foreground"><Icon className="size-[18px]" strokeWidth={1.75} /></span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-foreground"><Icon className="size-[18px]" strokeWidth={1.75} /></span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold">{title}</span>
         {description && <span className="mt-0.5 block truncate text-xs text-muted-foreground">{description}</span>}
