@@ -99,7 +99,7 @@ export function RiderOperations() {
         <section className="mt-8 surface-panel p-5 text-sm"><p className="section-label">Status</p><p className="mt-2">You're available. Accept a ride below or wait for FUTAMOVE to assign one.</p></section>
       )}
       <section className="mt-10 space-y-3">
-        <SectionHeading title="Available rides" detail={available.data ? String(available.data.length) : undefined} />
+        <SectionHeading title="Available rides" detail={String(available.data?.length ?? 0)} />
         {claim.error && <p className="text-sm text-destructive">{claim.error.message}</p>}
         {available.isLoading ? <LoadingState /> : available.data?.length ? (
           <div className="divider-list">
