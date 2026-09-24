@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AccountTypeRouteImport } from './routes/account-type'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerificationRouteImport } from './routes/verification'
+import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRiderRouteImport } from './routes/_authenticated/rider'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/student'
@@ -47,9 +50,19 @@ const AccountTypeRoute = AccountTypeRouteImport.update({
   path: '/account-type',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -62,6 +75,12 @@ const VerificationRoute = VerificationRouteImport.update({
   path: '/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAccountSetupRoute =
+  AuthenticatedAccountSetupRouteImport.update({
+    id: '/account-setup',
+    path: '/account-setup',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -163,9 +182,12 @@ const AuthenticatedStudentRidesIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account-type': typeof AccountTypeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/rider': typeof AuthenticatedRiderRouteWithChildren
   '/student': typeof AuthenticatedStudentRouteWithChildren
@@ -187,9 +209,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account-type': typeof AccountTypeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/rider': typeof AuthenticatedRiderRouteWithChildren
   '/student': typeof AuthenticatedStudentRouteWithChildren
@@ -213,9 +238,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/account-type': typeof AccountTypeRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
+  '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/rider': typeof AuthenticatedRiderRouteWithChildren
   '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
@@ -239,9 +267,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account-type'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/verification'
+    | '/account-setup'
     | '/admin'
     | '/rider'
     | '/student'
@@ -263,9 +294,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account-type'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/verification'
+    | '/account-setup'
     | '/admin'
     | '/rider'
     | '/student'
@@ -288,9 +322,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/account-type'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/verification'
+    | '/_authenticated/account-setup'
     | '/_authenticated/admin'
     | '/_authenticated/rider'
     | '/_authenticated/student'
@@ -314,7 +351,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccountTypeRoute: typeof AccountTypeRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   VerificationRoute: typeof VerificationRoute
 }
@@ -342,11 +381,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -362,6 +415,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verification'
       preLoaderRoute: typeof VerificationRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/account-setup': {
+      id: '/_authenticated/account-setup'
+      path: '/account-setup'
+      fullPath: '/account-setup'
+      preLoaderRoute: typeof AuthenticatedAccountSetupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -541,12 +601,14 @@ const AuthenticatedStudentRouteWithChildren =
   AuthenticatedStudentRoute._addFileChildren(AuthenticatedStudentRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountSetupRoute: typeof AuthenticatedAccountSetupRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedRiderRoute: typeof AuthenticatedRiderRouteWithChildren
   AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountSetupRoute: AuthenticatedAccountSetupRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedRiderRoute: AuthenticatedRiderRouteWithChildren,
   AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
@@ -559,7 +621,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccountTypeRoute: AccountTypeRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   VerificationRoute: VerificationRoute,
 }
