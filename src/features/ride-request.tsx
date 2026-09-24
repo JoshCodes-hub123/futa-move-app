@@ -301,6 +301,7 @@ export function RideRequestPage({
                 origin={origin}
                 destination={destination}
                 departure={useNow ? new Date().toISOString() : departure}
+                meetingPoint={meetingPoint}
               />
             </div>
 
@@ -413,10 +414,12 @@ export function RouteSummary({
   origin,
   destination,
   departure,
+  meetingPoint,
 }: {
   origin: string;
   destination: string;
   departure: string;
+  meetingPoint?: string | null;
 }) {
   return (
     <div className="surface-panel p-5">
@@ -435,6 +438,17 @@ export function RouteSummary({
           <span className="block text-sm font-semibold">{formatDepartureTime(departure)}</span>
         </span>
       </div>
+      {meetingPoint ? (
+        <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
+          <span className="grid size-9 place-items-center rounded-full bg-muted text-muted-foreground">
+            <Users className="size-[18px]" strokeWidth={1.75} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-xs text-muted-foreground">Meeting point</span>
+            <span className="block truncate text-sm font-semibold">{meetingPoint}</span>
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
