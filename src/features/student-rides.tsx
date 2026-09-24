@@ -8,6 +8,9 @@ import { EmptyState, ErrorState, LoadingState, ScreenHeader, SectionHeading, Tru
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RouteSummary } from "@/features/ride-request";
+import { CATEGORY_LABELS, CATEGORY_ORDER, listActiveLocations } from "@/services/locations";
+import { Input } from "@/components/ui/input";
+import { MapPin } from "lucide-react";
 import {
   cancelRideRequest,
   formatDepartureTime,
@@ -15,7 +18,7 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
-import { KEKE_CAPACITY, addGroupMember, agreeMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest } from "@/services/ride-groups";
+import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
 
@@ -209,7 +212,6 @@ export function RideRequestDetailPage({ id }: { id: string }) {
                     origin={data.origin_text}
                     destination={data.destination_text}
                     departure={data.departure_time}
-                    meetingPoint={data.meeting_point_text}
                   />
                   <p className="mt-3 text-sm text-muted-foreground">
                     {isShared ? "Shared ride" : "Private keke"} · {data.party_size} {data.party_size === 1 ? "person" : "people"}
@@ -336,7 +338,7 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
     await queryClient.invalidateQueries({ queryKey: rideRequestsKey });
   };
 
-  const agree = useMutation({ mutationFn: () => agreeMeetingPoint(groupId), onSuccess: refresh });
+  const agree = useMutation({ mutationFn: (version: number) => confirmMeetingPoint(groupId, version), onSuccess: refresh, onError: refresh });
   const addMember = useMutation({
     mutationFn: () => addGroupMember(groupId),
     onSuccess: async (result) => {
@@ -366,6 +368,7 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
   const ready = g.status === "ready";
   const seatsLeft = g.capacity - g.passenger_count;
   const waitingOn = g.members.filter((m) => !m.meeting_point_agreed).length;
+  const needsNewPoint = !g.meeting_point_active;
   const error = agree.error ?? addMember.error ?? leave.error;
 
   return (
@@ -374,14 +377,18 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
       <h1 className="display-title mt-2 text-[2rem]">{ready ? "Your group is ready" : "Your group is forming"}</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {ready
-          ? "Everyone agreed on the meeting point. Rider search arrives in the next phase — nothing is booked yet."
-          : `Waiting for ${waitingOn} ${waitingOn === 1 ? "member" : "members"} to agree on the meeting point.`}
+          ? "✓ Meeting point confirmed. Your group is ready for the next step — rider search arrives in the next phase, nothing is booked yet."
+          : needsNewPoint
+            ? "The meeting point is no longer available. Your group needs a new meeting point before it can continue."
+            : g.members.length < 2
+              ? "Waiting for more members."
+              : `Waiting for ${waitingOn} ${waitingOn === 1 ? "member" : "members"} to confirm the meeting point.`}
       </p>
 
       <div className="mt-6 flex items-center justify-between">
         <Badge variant={ready ? "success" : "warning"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
           <span className={ready ? "size-1.5 rounded-full bg-success" : "size-1.5 animate-pulse rounded-full bg-warning"} />
-          {ready ? "Group ready" : "Waiting for members"}
+          {ready ? "Group ready" : "Waiting for confirmations"}
         </Badge>
         <span className="text-sm font-semibold">
           {g.passenger_count} of {g.capacity} seats
@@ -392,8 +399,10 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
       </div>
 
       <div className="mt-6">
-        <RouteSummary origin={g.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
+        <RouteSummary origin={g.my_origin_text ?? g.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
       </div>
+
+      <MeetingPointSection g={g} onChanged={refresh} />
 
       <section className="mt-8">
         <SectionHeading title="Members" detail={`${g.members.length} ${g.members.length === 1 ? "request" : "requests"}`} />
@@ -409,15 +418,15 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
                   {m.party_size > 1 && <span className="font-normal text-muted-foreground"> +{m.party_size - 1}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {m.is_organizer ? "Suggested the meeting point" : "Verified FUTA student"}
+                  {m.is_organizer ? "Group organiser" : "Verified FUTA student"}
                 </p>
               </div>
               {m.meeting_point_agreed ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
-                  <CheckCircle2 className="size-4" strokeWidth={2} /> Agreed
+                  <CheckCircle2 className="size-4" strokeWidth={2} /> Confirmed
                 </span>
               ) : (
-                <span className="text-xs text-muted-foreground">Pending</span>
+                <span className="text-xs text-muted-foreground">○ Waiting for confirmation</span>
               )}
             </div>
           ))}
@@ -432,11 +441,14 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
       {note && <p className="mt-5 text-sm text-muted-foreground">{note}</p>}
 
       <div className="mt-7 grid gap-3">
-        {me && !me.meeting_point_agreed && (
-          <Button size="lg" className="w-full" onClick={() => agree.mutate()} disabled={agree.isPending}>
+        {me && !me.meeting_point_agreed && !needsNewPoint && (
+          <Button size="lg" className="w-full" onClick={() => agree.mutate(g.meeting_point_version)} disabled={agree.isPending}>
             {agree.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-            {agree.isPending ? "Saving…" : `Agree to meet at ${g.meeting_point_text}`}
+            {agree.isPending ? "Saving…" : "Confirm meeting point"}
           </Button>
+        )}
+        {me?.meeting_point_agreed && (
+          <p className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-success"><CheckCircle2 className="size-4" /> Meeting point confirmed</p>
         )}
         {seatsLeft > 0 ? (
           <Button variant="secondary" size="lg" className="w-full" onClick={() => addMember.mutate()} disabled={addMember.isPending}>
@@ -459,5 +471,54 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
         />
       </div>
     </>
+  );
+}
+
+function MeetingPointSection({ g, onChanged }: { g: RideGroup; onChanged: () => Promise<void> }) {
+  const [editing, setEditing] = useState(false);
+  const [locationId, setLocationId] = useState(g.meeting_point_location_id ?? "");
+  const [note, setNote] = useState(g.meeting_point_note ?? "");
+  const locations = useQuery({ queryKey: ["locations", "active"], queryFn: listActiveLocations, enabled: editing });
+  const save = useMutation({
+    mutationFn: () => setMeetingPoint(g.id, locationId, note),
+    onSuccess: async () => { setEditing(false); await onChanged(); },
+  });
+  const differs = g.my_origin_text && g.my_origin_text !== g.meeting_point_text;
+  return (
+    <section className="surface-panel mt-6 p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid size-9 place-items-center rounded-full bg-muted text-muted-foreground"><MapPin className="size-[18px]" /></span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">Meeting point</p>
+          <p className="text-lg font-bold">{g.meeting_point_text}</p>
+          {g.meeting_point_note && <p className="mt-1 text-sm text-muted-foreground">{g.meeting_point_note}</p>}
+          {differs && <p className="mt-1 text-xs text-muted-foreground">Your current location: {g.my_origin_text}</p>}
+          {!g.meeting_point_active && <p className="mt-2 text-sm text-destructive">This location is no longer available. {g.can_manage_meeting_point ? "Choose a new meeting point." : "Waiting for the organiser to choose a new one."}</p>}
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Everyone in your group must confirm this meeting point before the ride can proceed.</p>
+        </div>
+      </div>
+      {g.can_manage_meeting_point && !editing && (
+        <Button variant="secondary" size="sm" className="mt-4" onClick={() => setEditing(true)}>Change meeting point</Button>
+      )}
+      {editing && (
+        <div className="mt-4 grid gap-3">
+          <select aria-label="New meeting point" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={locationId} onChange={(e) => setLocationId(e.target.value)}>
+            <option value="">{locations.isLoading ? "Loading locations…" : "Choose a location"}</option>
+            {CATEGORY_ORDER.map((cat) => (
+              <optgroup key={cat} label={CATEGORY_LABELS[cat]}>
+                {(locations.data ?? []).filter((l) => l.category === cat).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+          <Input aria-label="Optional note" maxLength={140} placeholder="Optional note, e.g. beside the security post" value={note} onChange={(e) => setNote(e.target.value)} />
+          <p className="text-xs text-muted-foreground">Changing the meeting point asks everyone to confirm again.</p>
+          {save.error && <p className="text-sm text-destructive">{(save.error as Error).message}</p>}
+          <div className="flex gap-2">
+            <Button size="sm" disabled={!locationId || save.isPending} onClick={() => save.mutate()}>Save meeting point</Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

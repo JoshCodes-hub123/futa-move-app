@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { signOutEverywhere } from "@/features/auth-pages";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, KeyRound, MapPin, Pencil, Plus, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/futamove/brand";
@@ -42,7 +43,7 @@ function AdminFrame({ title, intro, children }: { title: string; intro: string; 
       <div className="mx-auto max-w-5xl">
         <header className="flex items-center justify-between">
           <Brand compact />
-          <Link to="/student/home" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to app</Link>
+          <SignOutButton />
         </header>
         <AdminNav />
         <h1 className="display-title mt-8 text-3xl">{title}</h1>
@@ -267,4 +268,10 @@ export function AdminSettingsPage() {
       <ChangePassword />
     </AdminFrame>
   );
+}
+
+export function SignOutButton() {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  return <button type="button" onClick={() => void signOutEverywhere(qc, navigate)} className="text-sm text-muted-foreground hover:text-foreground">Sign out</button>;
 }

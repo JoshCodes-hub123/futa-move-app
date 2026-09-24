@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AccountSetupPage } from "@/features/auth-pages";
+export const Route = createFileRoute("/_authenticated/account-setup")({ head: () => ({ meta: [{ title: "Account setup — FUTAMOVE" }, { name: "description", content: "Finish setting up your FUTAMOVE account." }, { property: "og:title", content: "Account setup — FUTAMOVE" }, { property: "og:description", content: "Finish setting up your FUTAMOVE account." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: AccountSetupPage });
