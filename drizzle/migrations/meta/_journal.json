@@ -50,6 +50,13 @@
       "when": 1790266392583,
       "tag": "0006_roles_and_structured_meeting_point",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790267721405,
+      "tag": "0007_rider_applications_and_location_suggestions",
+      "breakpoints": true
     }
   ]
 }

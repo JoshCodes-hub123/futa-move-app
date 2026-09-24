@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      location_suggestions: {
+        Row: {
+          approved_location_id: string | null
+          category: Database["public"]["Enums"]["location_category"]
+          created_at: string
+          description: string | null
+          google_place_id: string | null
+          id: string
+          image_path: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          reason: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["location_suggestion_status"]
+          submitted_by: string
+          submitter_role: string
+          updated_at: string
+        }
+        Insert: {
+          approved_location_id?: string | null
+          category: Database["public"]["Enums"]["location_category"]
+          created_at?: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          image_path?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          reason: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["location_suggestion_status"]
+          submitted_by: string
+          submitter_role: string
+          updated_at?: string
+        }
+        Update: {
+          approved_location_id?: string | null
+          category?: Database["public"]["Enums"]["location_category"]
+          created_at?: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          image_path?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          reason?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["location_suggestion_status"]
+          submitted_by?: string
+          submitter_role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_suggestions_approved_location_id_fkey"
+            columns: ["approved_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           active: boolean
@@ -251,6 +322,66 @@ export type Database = {
           },
         ]
       }
+      rider_applications: {
+        Row: {
+          avatar_path: string
+          created_at: string
+          full_name: string
+          id: string
+          id_document_path: string | null
+          id_number: string | null
+          id_type: string | null
+          phone: string
+          plate_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["rider_application_status"]
+          updated_at: string
+          user_id: string
+          vehicle_description: string
+          vehicle_photo_path: string | null
+        }
+        Insert: {
+          avatar_path: string
+          created_at?: string
+          full_name: string
+          id?: string
+          id_document_path?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          phone: string
+          plate_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["rider_application_status"]
+          updated_at?: string
+          user_id: string
+          vehicle_description: string
+          vehicle_photo_path?: string | null
+        }
+        Update: {
+          avatar_path?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          id_document_path?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          phone?: string
+          plate_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["rider_application_status"]
+          updated_at?: string
+          user_id?: string
+          vehicle_description?: string
+          vehicle_photo_path?: string | null
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           avatar_path: string | null
@@ -376,7 +507,43 @@ export type Database = {
     }
     Functions: {
       add_group_member: { Args: { p_group_id: string }; Returns: Json }
+      admin_list_rider_applications: {
+        Args: never
+        Returns: {
+          avatar_path: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          id_document_path: string
+          id_number: string
+          id_type: string
+          phone: string
+          plate_number: string
+          rejection_reason: string
+          reviewed_at: string
+          status: Database["public"]["Enums"]["rider_application_status"]
+          user_id: string
+          vehicle_description: string
+          vehicle_photo_path: string
+        }[]
+      }
       agree_meeting_point: { Args: { p_group_id: string }; Returns: undefined }
+      approve_location_suggestion: {
+        Args: {
+          p_category: Database["public"]["Enums"]["location_category"]
+          p_description: string
+          p_google_place_id: string
+          p_latitude: number
+          p_location_id: string
+          p_location_type: string
+          p_longitude: number
+          p_mode: string
+          p_name: string
+          p_suggestion_id: string
+        }
+        Returns: string
+      }
       claim_student_role: { Args: never; Returns: string }
       confirm_meeting_point: {
         Args: { p_group_id: string; p_version?: number }
@@ -436,6 +603,10 @@ export type Database = {
         Returns: boolean
       }
       refresh_group_status: { Args: { _group_id: string }; Returns: undefined }
+      reject_location_suggestion: {
+        Args: { p_reason: string; p_suggestion_id: string }
+        Returns: undefined
+      }
       release_request_from_group: {
         Args: { _group_id: string; _request_id: string }
         Returns: undefined
@@ -447,6 +618,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      review_rider_application: {
+        Args: { p_action: string; p_application_id: string; p_reason: string }
+        Returns: undefined
+      }
       review_verification: {
         Args: { p_approve: boolean; p_reason?: string; p_submission_id: string }
         Returns: undefined
@@ -455,6 +630,33 @@ export type Database = {
       set_meeting_point: {
         Args: { p_group_id: string; p_location_id: string; p_note?: string }
         Returns: undefined
+      }
+      submit_location_suggestion: {
+        Args: {
+          p_category: Database["public"]["Enums"]["location_category"]
+          p_description: string
+          p_google_place_id: string
+          p_image_path: string
+          p_latitude: number
+          p_longitude: number
+          p_name: string
+          p_reason: string
+        }
+        Returns: string
+      }
+      submit_rider_application: {
+        Args: {
+          p_avatar_path: string
+          p_full_name: string
+          p_id_document_path: string
+          p_id_number: string
+          p_id_type: string
+          p_phone: string
+          p_plate_number: string
+          p_vehicle_description: string
+          p_vehicle_photo_path: string
+        }
+        Returns: string
       }
       submit_verification: {
         Args: {
@@ -470,7 +672,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "student" | "rider"
       location_category: "GATE" | "ACADEMIC" | "HOSTEL"
+      location_suggestion_status: "pending" | "approved" | "rejected"
       ride_request_status: "draft" | "searching" | "cancelled"
+      rider_application_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "suspended"
       student_verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
@@ -601,7 +809,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "student", "rider"],
       location_category: ["GATE", "ACADEMIC", "HOSTEL"],
+      location_suggestion_status: ["pending", "approved", "rejected"],
       ride_request_status: ["draft", "searching", "cancelled"],
+      rider_application_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "suspended",
+      ],
       student_verification_status: ["pending", "verified", "rejected"],
     },
   },

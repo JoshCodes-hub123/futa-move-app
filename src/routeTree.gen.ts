@@ -15,24 +15,30 @@ import { Route as AccountTypeRouteImport } from './routes/account-type'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RiderSignupRouteImport } from './routes/rider-signup'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRiderRouteImport } from './routes/_authenticated/rider'
+import { Route as AuthenticatedRiderApplicationRouteImport } from './routes/_authenticated/rider-application'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/student'
+import { Route as AuthenticatedAdminLocationSuggestionsRouteImport } from './routes/_authenticated/admin.location-suggestions'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
+import { Route as AuthenticatedAdminRidersRouteImport } from './routes/_authenticated/admin.riders'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminVerificationRouteImport } from './routes/_authenticated/admin.verification'
 import { Route as AuthenticatedRiderHomeRouteImport } from './routes/_authenticated/rider.home'
 import { Route as AuthenticatedRiderProfileRouteImport } from './routes/_authenticated/rider.profile'
 import { Route as AuthenticatedRiderRequestsRouteImport } from './routes/_authenticated/rider.requests'
+import { Route as AuthenticatedRiderSuggestLocationRouteImport } from './routes/_authenticated/rider.suggest-location'
 import { Route as AuthenticatedRiderTripsRouteImport } from './routes/_authenticated/rider.trips'
 import { Route as AuthenticatedRiderWalletRouteImport } from './routes/_authenticated/rider.wallet'
 import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
 import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student.profile'
 import { Route as AuthenticatedStudentRequestRouteImport } from './routes/_authenticated/student.request'
+import { Route as AuthenticatedStudentSuggestLocationRouteImport } from './routes/_authenticated/student.suggest-location'
 import { Route as AuthenticatedStudentRidesIndexRouteImport } from './routes/_authenticated/student.rides.index'
 import { Route as AuthenticatedStudentRidesIdRouteImport } from './routes/_authenticated/student.rides.$id'
 
@@ -65,6 +71,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RiderSignupRoute = RiderSignupRouteImport.update({
+  id: '/rider-signup',
+  path: '/rider-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -91,15 +102,33 @@ const AuthenticatedRiderRoute = AuthenticatedRiderRouteImport.update({
   path: '/rider',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRiderApplicationRoute =
+  AuthenticatedRiderApplicationRouteImport.update({
+    id: '/rider-application',
+    path: '/rider-application',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
   id: '/student',
   path: '/student',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminLocationSuggestionsRoute =
+  AuthenticatedAdminLocationSuggestionsRouteImport.update({
+    id: '/location-suggestions',
+    path: '/location-suggestions',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminLocationsRoute =
   AuthenticatedAdminLocationsRouteImport.update({
     id: '/locations',
     path: '/locations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRidersRoute =
+  AuthenticatedAdminRidersRouteImport.update({
+    id: '/riders',
+    path: '/riders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminSettingsRoute =
@@ -129,6 +158,12 @@ const AuthenticatedRiderRequestsRoute =
   AuthenticatedRiderRequestsRouteImport.update({
     id: '/requests',
     path: '/requests',
+    getParentRoute: () => AuthenticatedRiderRoute,
+  } as any)
+const AuthenticatedRiderSuggestLocationRoute =
+  AuthenticatedRiderSuggestLocationRouteImport.update({
+    id: '/suggest-location',
+    path: '/suggest-location',
     getParentRoute: () => AuthenticatedRiderRoute,
   } as any)
 const AuthenticatedRiderTripsRoute = AuthenticatedRiderTripsRouteImport.update({
@@ -166,6 +201,12 @@ const AuthenticatedStudentRequestRoute =
     path: '/request',
     getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
+const AuthenticatedStudentSuggestLocationRoute =
+  AuthenticatedStudentSuggestLocationRouteImport.update({
+    id: '/suggest-location',
+    path: '/suggest-location',
+    getParentRoute: () => AuthenticatedStudentRoute,
+  } as any)
 const AuthenticatedStudentRidesIndexRoute =
   AuthenticatedStudentRidesIndexRouteImport.update({
     id: '/rides/',
@@ -185,24 +226,30 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rider-signup': typeof RiderSignupRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/student': typeof AuthenticatedStudentRouteWithChildren
+  '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/riders': typeof AuthenticatedAdminRidersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/rider/home': typeof AuthenticatedRiderHomeRoute
   '/rider/profile': typeof AuthenticatedRiderProfileRoute
   '/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/rider/suggest-location': typeof AuthenticatedRiderSuggestLocationRoute
   '/rider/trips': typeof AuthenticatedRiderTripsRoute
   '/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/request': typeof AuthenticatedStudentRequestRoute
+  '/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
   '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -212,24 +259,30 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rider-signup': typeof RiderSignupRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/student': typeof AuthenticatedStudentRouteWithChildren
+  '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/riders': typeof AuthenticatedAdminRidersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/rider/home': typeof AuthenticatedRiderHomeRoute
   '/rider/profile': typeof AuthenticatedRiderProfileRoute
   '/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/rider/suggest-location': typeof AuthenticatedRiderSuggestLocationRoute
   '/rider/trips': typeof AuthenticatedRiderTripsRoute
   '/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/request': typeof AuthenticatedStudentRequestRoute
+  '/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
   '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -241,24 +294,30 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rider-signup': typeof RiderSignupRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/_authenticated/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
+  '/_authenticated/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/_authenticated/admin/riders': typeof AuthenticatedAdminRidersRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/_authenticated/rider/home': typeof AuthenticatedRiderHomeRoute
   '/_authenticated/rider/profile': typeof AuthenticatedRiderProfileRoute
   '/_authenticated/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/_authenticated/rider/suggest-location': typeof AuthenticatedRiderSuggestLocationRoute
   '/_authenticated/rider/trips': typeof AuthenticatedRiderTripsRoute
   '/_authenticated/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
   '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/student/request': typeof AuthenticatedStudentRequestRoute
+  '/_authenticated/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
   '/_authenticated/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/_authenticated/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -270,24 +329,30 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/rider-signup'
     | '/signup'
     | '/verification'
     | '/account-setup'
     | '/admin'
     | '/rider'
+    | '/rider-application'
     | '/student'
+    | '/admin/location-suggestions'
     | '/admin/locations'
+    | '/admin/riders'
     | '/admin/settings'
     | '/admin/verification'
     | '/rider/home'
     | '/rider/profile'
     | '/rider/requests'
+    | '/rider/suggest-location'
     | '/rider/trips'
     | '/rider/wallet'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
     | '/student/request'
+    | '/student/suggest-location'
     | '/student/rides/$id'
     | '/student/rides/'
   fileRoutesByTo: FileRoutesByTo
@@ -297,24 +362,30 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/rider-signup'
     | '/signup'
     | '/verification'
     | '/account-setup'
     | '/admin'
     | '/rider'
+    | '/rider-application'
     | '/student'
+    | '/admin/location-suggestions'
     | '/admin/locations'
+    | '/admin/riders'
     | '/admin/settings'
     | '/admin/verification'
     | '/rider/home'
     | '/rider/profile'
     | '/rider/requests'
+    | '/rider/suggest-location'
     | '/rider/trips'
     | '/rider/wallet'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
     | '/student/request'
+    | '/student/suggest-location'
     | '/student/rides/$id'
     | '/student/rides'
   id:
@@ -325,24 +396,30 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/rider-signup'
     | '/signup'
     | '/verification'
     | '/_authenticated/account-setup'
     | '/_authenticated/admin'
     | '/_authenticated/rider'
+    | '/_authenticated/rider-application'
     | '/_authenticated/student'
+    | '/_authenticated/admin/location-suggestions'
     | '/_authenticated/admin/locations'
+    | '/_authenticated/admin/riders'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/verification'
     | '/_authenticated/rider/home'
     | '/_authenticated/rider/profile'
     | '/_authenticated/rider/requests'
+    | '/_authenticated/rider/suggest-location'
     | '/_authenticated/rider/trips'
     | '/_authenticated/rider/wallet'
     | '/_authenticated/student/activity'
     | '/_authenticated/student/home'
     | '/_authenticated/student/profile'
     | '/_authenticated/student/request'
+    | '/_authenticated/student/suggest-location'
     | '/_authenticated/student/rides/$id'
     | '/_authenticated/student/rides/'
   fileRoutesById: FileRoutesById
@@ -354,6 +431,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RiderSignupRoute: typeof RiderSignupRoute
   SignupRoute: typeof SignupRoute
   VerificationRoute: typeof VerificationRoute
 }
@@ -402,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rider-signup': {
+      id: '/rider-signup'
+      path: '/rider-signup'
+      fullPath: '/rider-signup'
+      preLoaderRoute: typeof RiderSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -437,6 +522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRiderRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rider-application': {
+      id: '/_authenticated/rider-application'
+      path: '/rider-application'
+      fullPath: '/rider-application'
+      preLoaderRoute: typeof AuthenticatedRiderApplicationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student': {
       id: '/_authenticated/student'
       path: '/student'
@@ -444,11 +536,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/location-suggestions': {
+      id: '/_authenticated/admin/location-suggestions'
+      path: '/location-suggestions'
+      fullPath: '/admin/location-suggestions'
+      preLoaderRoute: typeof AuthenticatedAdminLocationSuggestionsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/locations': {
       id: '/_authenticated/admin/locations'
       path: '/locations'
       fullPath: '/admin/locations'
       preLoaderRoute: typeof AuthenticatedAdminLocationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/riders': {
+      id: '/_authenticated/admin/riders'
+      path: '/riders'
+      fullPath: '/admin/riders'
+      preLoaderRoute: typeof AuthenticatedAdminRidersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/settings': {
@@ -484,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/requests'
       fullPath: '/rider/requests'
       preLoaderRoute: typeof AuthenticatedRiderRequestsRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
+    }
+    '/_authenticated/rider/suggest-location': {
+      id: '/_authenticated/rider/suggest-location'
+      path: '/suggest-location'
+      fullPath: '/rider/suggest-location'
+      preLoaderRoute: typeof AuthenticatedRiderSuggestLocationRouteImport
       parentRoute: typeof AuthenticatedRiderRoute
     }
     '/_authenticated/rider/trips': {
@@ -528,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentRequestRouteImport
       parentRoute: typeof AuthenticatedStudentRoute
     }
+    '/_authenticated/student/suggest-location': {
+      id: '/_authenticated/student/suggest-location'
+      path: '/suggest-location'
+      fullPath: '/student/suggest-location'
+      preLoaderRoute: typeof AuthenticatedStudentSuggestLocationRouteImport
+      parentRoute: typeof AuthenticatedStudentRoute
+    }
     '/_authenticated/student/rides/': {
       id: '/_authenticated/student/rides/'
       path: '/rides'
@@ -546,13 +666,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminLocationSuggestionsRoute: typeof AuthenticatedAdminLocationSuggestionsRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
+  AuthenticatedAdminRidersRoute: typeof AuthenticatedAdminRidersRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminLocationSuggestionsRoute:
+    AuthenticatedAdminLocationSuggestionsRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
+  AuthenticatedAdminRidersRoute: AuthenticatedAdminRidersRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
 }
@@ -564,6 +689,7 @@ interface AuthenticatedRiderRouteChildren {
   AuthenticatedRiderHomeRoute: typeof AuthenticatedRiderHomeRoute
   AuthenticatedRiderProfileRoute: typeof AuthenticatedRiderProfileRoute
   AuthenticatedRiderRequestsRoute: typeof AuthenticatedRiderRequestsRoute
+  AuthenticatedRiderSuggestLocationRoute: typeof AuthenticatedRiderSuggestLocationRoute
   AuthenticatedRiderTripsRoute: typeof AuthenticatedRiderTripsRoute
   AuthenticatedRiderWalletRoute: typeof AuthenticatedRiderWalletRoute
 }
@@ -572,6 +698,8 @@ const AuthenticatedRiderRouteChildren: AuthenticatedRiderRouteChildren = {
   AuthenticatedRiderHomeRoute: AuthenticatedRiderHomeRoute,
   AuthenticatedRiderProfileRoute: AuthenticatedRiderProfileRoute,
   AuthenticatedRiderRequestsRoute: AuthenticatedRiderRequestsRoute,
+  AuthenticatedRiderSuggestLocationRoute:
+    AuthenticatedRiderSuggestLocationRoute,
   AuthenticatedRiderTripsRoute: AuthenticatedRiderTripsRoute,
   AuthenticatedRiderWalletRoute: AuthenticatedRiderWalletRoute,
 }
@@ -584,6 +712,7 @@ interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentRequestRoute: typeof AuthenticatedStudentRequestRoute
+  AuthenticatedStudentSuggestLocationRoute: typeof AuthenticatedStudentSuggestLocationRoute
   AuthenticatedStudentRidesIdRoute: typeof AuthenticatedStudentRidesIdRoute
   AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -593,6 +722,8 @@ const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentRequestRoute: AuthenticatedStudentRequestRoute,
+  AuthenticatedStudentSuggestLocationRoute:
+    AuthenticatedStudentSuggestLocationRoute,
   AuthenticatedStudentRidesIdRoute: AuthenticatedStudentRidesIdRoute,
   AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
 }
@@ -604,6 +735,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountSetupRoute: typeof AuthenticatedAccountSetupRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedRiderRoute: typeof AuthenticatedRiderRouteWithChildren
+  AuthenticatedRiderApplicationRoute: typeof AuthenticatedRiderApplicationRoute
   AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
 }
 
@@ -611,6 +743,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountSetupRoute: AuthenticatedAccountSetupRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedRiderRoute: AuthenticatedRiderRouteWithChildren,
+  AuthenticatedRiderApplicationRoute: AuthenticatedRiderApplicationRoute,
   AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
 }
 
@@ -624,6 +757,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RiderSignupRoute: RiderSignupRoute,
   SignupRoute: SignupRoute,
   VerificationRoute: VerificationRoute,
 }

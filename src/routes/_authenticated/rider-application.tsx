@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { RiderApplicationPage } from "@/features/rider-onboarding";
+export const Route = createFileRoute("/_authenticated/rider-application")({ head: () => ({ meta: [{ title: "Rider application — FUTAMOVE" }, { name: "description", content: "Submit and track your FUTAMOVE rider application." }, { property: "og:title", content: "Rider application — FUTAMOVE" }, { property: "og:description", content: "Submit and track your FUTAMOVE rider application." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: RiderApplicationPage });

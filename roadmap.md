@@ -11,4 +11,5 @@
 - [ ] Location coordinates/official names/images (blocked: owner/admin must enter verified data)
 - [x] Central login + role routing (student/rider/admin), forgot/reset password, account setup
 - [x] Structured group meeting point (locations), per-member confirmation, reset on change/deactivation
-- [ ] Rider account onboarding (blocked: owner decision on how riders are approved)
+- [x] Rider registration + admin approval/reject/suspend (/admin/riders)
+- [x] Community location suggestions + admin review into locations (/admin/location-suggestions)

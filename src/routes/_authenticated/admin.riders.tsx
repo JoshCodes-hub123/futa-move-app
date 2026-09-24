@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AdminRidersPage } from "@/features/admin-riders";
+export const Route = createFileRoute("/_authenticated/admin/riders")({ head: () => ({ meta: [{ title: "Riders — Admin — FUTAMOVE" }, { name: "description", content: "Review and manage FUTAMOVE rider applications." }, { property: "og:title", content: "Riders — Admin — FUTAMOVE" }, { property: "og:description", content: "Review and manage FUTAMOVE rider applications." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: AdminRidersPage });

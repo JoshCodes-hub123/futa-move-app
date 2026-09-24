@@ -31,12 +31,14 @@ export function AdminNav() {
     <nav className="mt-6 flex flex-wrap gap-1" aria-label="Admin sections">
       <Link to="/admin/verification" className={link} activeProps={active}>Verification</Link>
       <Link to="/admin/locations" className={link} activeProps={active}>Locations</Link>
+      <Link to="/admin/location-suggestions" className={link} activeProps={active}>Location Suggestions</Link>
+      <Link to="/admin/riders" className={link} activeProps={active}>Riders</Link>
       <Link to="/admin/settings" className={link} activeProps={active}>Settings</Link>
     </nav>
   );
 }
 
-function AdminFrame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
+export function AdminFrame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   const admin = useQuery({ queryKey: ["am-admin"], queryFn: amIAdmin });
   return (
     <main className="min-h-screen bg-background px-5 py-8 sm:px-10">
