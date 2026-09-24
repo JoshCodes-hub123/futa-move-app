@@ -18,6 +18,7 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
+import { confirmRide, isCancelled, listMyGroupTrips, STUDENT_TRIP_LABEL, type TripStatus } from "@/services/trips";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
@@ -33,7 +34,7 @@ function StatusPill({ status }: { status: RideRequest["status"] }) {
   );
 }
 
-function RequestRow({ request }: { request: RideRequest }) {
+function RequestRow({ request, trip }: { request: RideRequest; trip?: TripStatus | undefined }) {
   return (
     <Link
       to="/student/rides/$id"
@@ -42,7 +43,7 @@ function RequestRow({ request }: { request: RideRequest }) {
     >
       <div className="min-w-0 flex-1">
         <p className="section-label mb-2">
-          {request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
+          {trip && request.group_id ? STUDENT_TRIP_LABEL[trip] : request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
         </p>
         <p className="truncate text-sm font-semibold">{request.origin_text}</p>
         <p className="truncate text-sm font-semibold text-muted-foreground">↓ {request.destination_text}</p>
@@ -58,8 +59,11 @@ function RequestRow({ request }: { request: RideRequest }) {
 
 export function StudentRidesPage() {
   const { data, isLoading, isError } = useQuery({ queryKey: rideRequestsKey, queryFn: listRideRequests });
-  const active = (data ?? []).filter((r) => r.status === "searching");
-  const past = (data ?? []).filter((r) => r.status !== "searching");
+  const trips = useQuery({ queryKey: ["my-group-trips"], queryFn: listMyGroupTrips, refetchInterval: 10000 });
+  const tripOf = (r: RideRequest) => (r.group_id ? (trips.data?.find((t) => t.group_id === r.group_id)?.status as TripStatus | undefined) : undefined);
+  const finished = (r: RideRequest) => { const t = tripOf(r); return !!t && (t === "completed" || isCancelled(t)); };
+  const active = (data ?? []).filter((r) => r.status === "searching" && !finished(r));
+  const past = (data ?? []).filter((r) => r.status !== "searching" || finished(r));
 
   return (
     <AppShell role="student">
@@ -96,7 +100,7 @@ export function StudentRidesPage() {
             {active.length ? (
               <div className="mt-2 divider-list">
                 {active.map((request) => (
-                  <RequestRow key={request.id} request={request} />
+                  <RequestRow key={request.id} request={request} trip={tripOf(request)} />
                 ))}
               </div>
             ) : (
@@ -118,10 +122,10 @@ export function StudentRidesPage() {
 
           {past.length > 0 && (
             <section className="mt-10">
-              <SectionHeading title="Earlier requests" />
+              <SectionHeading title="Ride history" />
               <div className="mt-2 divider-list">
                 {past.map((request) => (
-                  <RequestRow key={request.id} request={request} />
+                  <RequestRow key={request.id} request={request} trip={tripOf(request)} />
                 ))}
               </div>
             </section>
@@ -338,6 +342,7 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
     await queryClient.invalidateQueries({ queryKey: rideRequestsKey });
   };
 
+  const rideConfirm = useMutation({ mutationFn: () => confirmRide(groupId), onSuccess: refresh, onError: refresh });
   const agree = useMutation({ mutationFn: (version: number) => confirmMeetingPoint(groupId, version), onSuccess: refresh, onError: refresh });
   const addMember = useMutation({
     mutationFn: () => addGroupMember(groupId),
@@ -364,20 +369,21 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
   if (group.isError || !group.data) return <ErrorState message="We couldn't load your group." />;
 
   const g = group.data;
+  if (g.trip) return <StudentTripPanel g={g} />;
   const me = g.members.find((m) => m.is_me);
   const ready = g.status === "ready";
   const seatsLeft = g.capacity - g.passenger_count;
   const waitingOn = g.members.filter((m) => !m.meeting_point_agreed).length;
   const needsNewPoint = !g.meeting_point_active;
-  const error = agree.error ?? addMember.error ?? leave.error;
+  const error = rideConfirm.error ?? agree.error ?? addMember.error ?? leave.error;
 
   return (
     <>
       <p className="section-label">Temporary group</p>
-      <h1 className="display-title mt-2 text-[2rem]">{ready ? "Your group is ready" : "Your group is forming"}</h1>
+      <h1 className="display-title mt-2 text-[2rem]">{ready ? "Ride ready" : "Your group is forming"}</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {ready
-          ? "✓ Meeting point confirmed. Your group is ready for the next step — rider search arrives in the next phase, nothing is booked yet."
+          ? `Meeting point agreed. Every member must now confirm the ride — ${g.members.filter((m) => !m.ride_confirmed).length} still to confirm. A rider is requested once everyone confirms.`
           : needsNewPoint
             ? "The meeting point is no longer available. Your group needs a new meeting point before it can continue."
             : g.members.length < 2
@@ -388,7 +394,7 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
       <div className="mt-6 flex items-center justify-between">
         <Badge variant={ready ? "success" : "warning"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
           <span className={ready ? "size-1.5 rounded-full bg-success" : "size-1.5 animate-pulse rounded-full bg-warning"} />
-          {ready ? "Group ready" : "Waiting for confirmations"}
+          {ready ? "Awaiting ride confirmation" : "Waiting for confirmations"}
         </Badge>
         <span className="text-sm font-semibold">
           {g.passenger_count} of {g.capacity} seats
@@ -421,7 +427,13 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
                   {m.is_organizer ? "Group organiser" : "Verified FUTA student"}
                 </p>
               </div>
-              {m.meeting_point_agreed ? (
+              {ready ? (
+                m.ride_confirmed ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-success"><CheckCircle2 className="size-4" strokeWidth={2} /> Ride confirmed</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">○ Confirming ride</span>
+                )
+              ) : m.meeting_point_agreed ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
                   <CheckCircle2 className="size-4" strokeWidth={2} /> Confirmed
                 </span>
@@ -447,7 +459,16 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
             {agree.isPending ? "Saving…" : "Confirm meeting point"}
           </Button>
         )}
-        {me?.meeting_point_agreed && (
+        {ready && me && !me.ride_confirmed && (
+          <Button size="lg" className="w-full" onClick={() => rideConfirm.mutate()} disabled={rideConfirm.isPending}>
+            {rideConfirm.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
+            {rideConfirm.isPending ? "Confirming…" : "Confirm ride"}
+          </Button>
+        )}
+        {ready && me?.ride_confirmed && (
+          <p className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-success"><CheckCircle2 className="size-4" /> You confirmed this ride</p>
+        )}
+        {!ready && me?.meeting_point_agreed && (
           <p className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-success"><CheckCircle2 className="size-4" /> Meeting point confirmed</p>
         )}
         {seatsLeft > 0 ? (
@@ -520,5 +541,90 @@ function MeetingPointSection({ g, onChanged }: { g: RideGroup; onChanged: () => 
         </div>
       )}
     </section>
+  );
+}
+
+const STUDENT_STEPS: { key: TripStatus; label: string; at: keyof NonNullable<RideGroup["trip"]> | null }[] = [
+  { key: "confirmed", label: "Ride confirmed", at: null },
+  { key: "accepted", label: "Rider assigned", at: "accepted_at" },
+  { key: "arriving", label: "Rider on the way", at: "arriving_at" },
+  { key: "picked_up", label: "Picked up", at: "picked_up_at" },
+  { key: "in_progress", label: "Ride in progress", at: "started_at" },
+  { key: "completed", label: "Ride completed", at: "completed_at" },
+];
+const STEP_ORDER: TripStatus[] = ["confirmed", "assigned", "accepted", "arriving", "picked_up", "in_progress", "completed"];
+
+function StudentTripPanel({ g }: { g: RideGroup }) {
+  const t = g.trip!;
+  const cancelled = isCancelled(t.status);
+  const idx = STEP_ORDER.indexOf(t.status);
+  const done = t.status === "completed";
+  return (
+    <>
+      <p className="section-label">Your ride</p>
+      <h1 className="display-title mt-2 text-[2rem]">{STUDENT_TRIP_LABEL[t.status]}</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        {cancelled
+          ? t.cancel_reason ?? "This ride was cancelled."
+          : t.status === "confirmed" || t.status === "assigned"
+            ? "Everyone confirmed. FUTAMOVE is finding a keke rider for your group."
+            : t.status === "accepted"
+              ? "A rider has accepted your ride. Be at the meeting point on time."
+              : t.status === "arriving"
+                ? "Your rider is heading to the meeting point now."
+                : t.status === "picked_up"
+                  ? "You've been picked up."
+                  : t.status === "in_progress"
+                    ? "Enjoy the ride."
+                    : "You've arrived. Thanks for riding with FUTAMOVE."}
+      </p>
+      <div className="mt-6 flex items-center justify-between">
+        <Badge variant={cancelled ? "outline" : done ? "success" : "warning"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
+          {!cancelled && !done && <span className="size-1.5 animate-pulse rounded-full bg-warning" />}
+          {STUDENT_TRIP_LABEL[t.status]}
+        </Badge>
+        <span className="text-sm font-semibold">{g.passenger_count} {g.passenger_count === 1 ? "passenger" : "passengers"}</span>
+      </div>
+      <div className="mt-6">
+        <RouteSummary origin={t.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
+      </div>
+      {g.meeting_point_note && <p className="mt-3 text-xs text-muted-foreground">Meeting point note: {g.meeting_point_note}</p>}
+      {t.rider && (
+        <section className="mt-6 surface-panel p-4">
+          <p className="section-label">Your rider</p>
+          <p className="mt-2 text-sm font-semibold">{t.rider.first_name}</p>
+          <p className="text-xs text-muted-foreground">{t.rider.vehicle}{t.rider.plate ? ` · ${t.rider.plate}` : ""}</p>
+        </section>
+      )}
+      {!cancelled && (
+        <ol className="mt-8 space-y-3">
+          {STUDENT_STEPS.map((s) => {
+            const reached = STEP_ORDER.indexOf(s.key) <= idx;
+            const when = s.at ? (t[s.at] as string | null) : null;
+            return (
+              <li key={s.key} className="flex items-center gap-3 text-sm">
+                {reached ? <CheckCircle2 className="size-4 text-success" /> : <span className="size-4 rounded-full border border-border" />}
+                <span className={reached ? "font-semibold" : "text-muted-foreground"}>{s.label}</span>
+                {when && <span className="ml-auto text-xs text-muted-foreground">{new Date(when).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <section className="mt-8">
+        <SectionHeading title="Passengers" detail={`${g.members.length} ${g.members.length === 1 ? "request" : "requests"}`} />
+        <div className="mt-2 divider-list">
+          {g.members.map((m, i) => (
+            <p key={`${m.joined_at}-${i}`} className="py-3 text-sm font-semibold">
+              {m.is_me ? "You" : m.first_name}
+              {m.party_size > 1 && <span className="font-normal text-muted-foreground"> +{m.party_size - 1}</span>}
+            </p>
+          ))}
+        </div>
+      </section>
+      {(t.status === "confirmed" || t.status === "assigned" || t.status === "accepted") && (
+        <p className="mt-6 text-xs text-muted-foreground">Need to drop out? Use “Cancel request” below. Once the rider is on the way, contact FUTAMOVE support instead.</p>
+      )}
+    </>
   );
 }

@@ -144,6 +144,7 @@ export type Database = {
           joined_at: string
           meeting_point_agreed: boolean
           request_id: string
+          ride_confirmed_at: string | null
           student_id: string
         }
         Insert: {
@@ -153,6 +154,7 @@ export type Database = {
           joined_at?: string
           meeting_point_agreed?: boolean
           request_id: string
+          ride_confirmed_at?: string | null
           student_id: string
         }
         Update: {
@@ -162,6 +164,7 @@ export type Database = {
           joined_at?: string
           meeting_point_agreed?: boolean
           request_id?: string
+          ride_confirmed_at?: string | null
           student_id?: string
         }
         Relationships: [
@@ -435,6 +438,162 @@ export type Database = {
           },
         ]
       }
+      trip_status_history: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          reason: string | null
+          rider_id: string | null
+          to_status: string
+          trip_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          rider_id?: string | null
+          to_status: string
+          trip_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          rider_id?: string | null
+          to_status?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_status_history_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips: {
+        Row: {
+          accepted_at: string | null
+          arrived_at: string | null
+          arriving_at: string | null
+          assigned_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_by_role: string | null
+          cancelled_from_status: string | null
+          completed_at: string | null
+          confirmed_at: string
+          created_at: string
+          departure_time: string
+          destination_location_id: string | null
+          destination_text: string
+          group_id: string
+          id: string
+          meeting_point_location_id: string | null
+          meeting_point_note: string | null
+          meeting_point_text: string
+          member_count: number
+          passenger_count: number
+          picked_up_at: string | null
+          rider_id: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          arrived_at?: string | null
+          arriving_at?: string | null
+          assigned_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_role?: string | null
+          cancelled_from_status?: string | null
+          completed_at?: string | null
+          confirmed_at?: string
+          created_at?: string
+          departure_time: string
+          destination_location_id?: string | null
+          destination_text: string
+          group_id: string
+          id?: string
+          meeting_point_location_id?: string | null
+          meeting_point_note?: string | null
+          meeting_point_text: string
+          member_count: number
+          passenger_count: number
+          picked_up_at?: string | null
+          rider_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          arrived_at?: string | null
+          arriving_at?: string | null
+          assigned_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_role?: string | null
+          cancelled_from_status?: string | null
+          completed_at?: string | null
+          confirmed_at?: string
+          created_at?: string
+          departure_time?: string
+          destination_location_id?: string | null
+          destination_text?: string
+          group_id?: string
+          id?: string
+          meeting_point_location_id?: string | null
+          meeting_point_note?: string | null
+          meeting_point_text?: string
+          member_count?: number
+          passenger_count?: number
+          picked_up_at?: string | null
+          rider_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_destination_location_id_fkey"
+            columns: ["destination_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
+            referencedRelation: "ride_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_meeting_point_location_id_fkey"
+            columns: ["meeting_point_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -507,6 +666,24 @@ export type Database = {
     }
     Functions: {
       add_group_member: { Args: { p_group_id: string }; Returns: Json }
+      admin_assign_rider: {
+        Args: { p_rider_id: string; p_trip_id: string }
+        Returns: undefined
+      }
+      admin_cancel_trip: {
+        Args: { p_outcome: string; p_reason: string; p_trip_id: string }
+        Returns: undefined
+      }
+      admin_list_eligible_riders: {
+        Args: never
+        Returns: {
+          busy: boolean
+          full_name: string
+          plate_number: string
+          user_id: string
+          vehicle_description: string
+        }[]
+      }
       admin_list_rider_applications: {
         Args: never
         Returns: {
@@ -549,6 +726,7 @@ export type Database = {
         Args: { p_group_id: string; p_version?: number }
         Returns: undefined
       }
+      confirm_ride: { Args: { p_group_id: string }; Returns: Json }
       destinations_compatible: {
         Args: { _a: string; _b: string }
         Returns: boolean
@@ -575,6 +753,16 @@ export type Database = {
       }
       is_verified_student: { Args: { _user_id: string }; Returns: boolean }
       leave_ride_group: { Args: { p_group_id: string }; Returns: undefined }
+      log_trip_status: {
+        Args: {
+          _from: string
+          _reason: string
+          _role: string
+          _to: string
+          _trip: string
+        }
+        Returns: undefined
+      }
       match_ride_request: { Args: { p_request_id: string }; Returns: Json }
       match_time_tolerance: { Args: never; Returns: string }
       normalize_place: { Args: { _t: string }; Returns: string }
@@ -627,10 +815,42 @@ export type Database = {
         Returns: undefined
       }
       ride_capacity: { Args: never; Returns: number }
+      rider_advance_trip: {
+        Args: { p_to: string; p_trip_id: string }
+        Returns: undefined
+      }
+      rider_available_trips: {
+        Args: never
+        Returns: {
+          confirmed_at: string
+          departure_time: string
+          destination_text: string
+          id: string
+          meeting_point_note: string
+          meeting_point_text: string
+          member_count: number
+          passenger_count: number
+        }[]
+      }
+      rider_claim_trip: { Args: { p_trip_id: string }; Returns: undefined }
+      rider_is_busy: {
+        Args: { _except?: string; _uid: string }
+        Returns: boolean
+      }
+      rider_is_eligible: { Args: { _uid: string }; Returns: boolean }
+      rider_respond_assignment: {
+        Args: { p_accept: boolean; p_reason?: string; p_trip_id: string }
+        Returns: undefined
+      }
+      rider_withdraw_trip: {
+        Args: { p_reason: string; p_trip_id: string }
+        Returns: undefined
+      }
       set_meeting_point: {
         Args: { p_group_id: string; p_location_id: string; p_note?: string }
         Returns: undefined
       }
+      student_in_active_group: { Args: { _uid: string }; Returns: boolean }
       submit_location_suggestion: {
         Args: {
           p_category: Database["public"]["Enums"]["location_category"]
@@ -668,6 +888,7 @@ export type Database = {
         }
         Returns: string
       }
+      trip_is_terminal: { Args: { _s: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "student" | "rider"

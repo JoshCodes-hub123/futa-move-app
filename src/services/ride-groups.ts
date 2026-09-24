@@ -16,6 +16,8 @@ export interface RideGroupMember {
   is_organizer: boolean;
   party_size: number;
   meeting_point_agreed: boolean;
+  /** explicit "I'm taking this ride" once the group is ready */
+  ride_confirmed: boolean;
   joined_at: string;
 }
 
@@ -31,10 +33,21 @@ export interface RideGroup {
   meeting_point_version: number;
   my_origin_text: string | null;
   can_manage_meeting_point: boolean;
-  status: "forming" | "ready" | "cancelled" | "completed";
+  status: "forming" | "ready" | "confirmed" | "cancelled" | "completed";
   capacity: number;
   passenger_count: number;
   members: RideGroupMember[];
+  trip: GroupTrip | null;
+}
+
+export interface GroupTrip {
+  id: string;
+  status: import("./trips").TripStatus;
+  meeting_point_text: string;
+  assigned_at: string | null; accepted_at: string | null; arriving_at: string | null; picked_up_at: string | null;
+  started_at: string | null; completed_at: string | null; cancelled_at: string | null; cancel_reason: string | null;
+  /** Only shown once the rider accepted: first name and keke details. */
+  rider: { first_name: string; vehicle: string; plate: string | null } | null;
 }
 
 export class RideGroupError extends Error {}
