@@ -5,4 +5,6 @@
 - [x] Matching/searching + temporary group UI on ride detail
 - [x] Align with uploaded "Phase 1B Core Ride Matching & Group Architecture" spec
 - [x] Verify build + matching scenarios
-- [ ] Mark students as verified (blocked: needs an admin review process / decision from owner)
+- [x] Student verification workflow (photo + ID card, admin review)
+- [ ] Make first admin account (blocked: owner must say which account)
+- [ ] Real FUTA pickup points + images (blocked: approved dataset from owner)

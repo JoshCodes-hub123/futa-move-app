@@ -84,8 +84,23 @@ export async function cancelRideRequest(id: string): Promise<RideRequest> {
   return data;
 }
 
-/** Known FUTA pickup/drop-off points. Picking one gives exact point matching. */
-export const FUTA_POINTS: { id: string; name: string }[] = [
+/**
+ * FUTA place record. Architecture supports coordinates, a representative image and a type,
+ * but these stay null until the approved FUTA location dataset is confirmed — never invent them.
+ */
+export type FutaPlace = {
+  id: string; // normalized location identity, used for exact point matching
+  name: string;
+  kind?: "gate" | "campus" | "hostel" | "town";
+  latitude?: number | null;
+  longitude?: number | null;
+  imageUrl?: string | null;
+  /** true until confirmed as an official FUTAMOVE pickup point */
+  provisional?: boolean;
+};
+
+/** PROVISIONAL names only (no coordinates). Picking one gives exact point matching. */
+export const FUTA_POINTS: FutaPlace[] = [
   { id: "futa-north-gate", name: "FUTA North Gate" },
   { id: "futa-south-gate", name: "FUTA South Gate" },
   { id: "futa-sub", name: "Student Union Building (SUB)" },

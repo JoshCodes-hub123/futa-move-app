@@ -20,6 +20,7 @@ import { Route as RiderProfileRouteImport } from './routes/rider.profile'
 import { Route as RiderRequestsRouteImport } from './routes/rider.requests'
 import { Route as RiderTripsRouteImport } from './routes/rider.trips'
 import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
+import { Route as AuthenticatedAdminVerificationRouteImport } from './routes/_authenticated/admin.verification'
 import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
 import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student.profile'
@@ -81,6 +82,12 @@ const RiderWalletRoute = RiderWalletRouteImport.update({
   path: '/rider/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminVerificationRoute =
+  AuthenticatedAdminVerificationRouteImport.update({
+    id: '/admin/verification',
+    path: '/admin/verification',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentActivityRoute =
   AuthenticatedStudentActivityRouteImport.update({
     id: '/student/activity',
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/_authenticated/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
   '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/admin/verification'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/admin/verification'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/_authenticated/admin/verification'
     | '/_authenticated/student/activity'
     | '/_authenticated/student/home'
     | '/_authenticated/student/profile'
@@ -325,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RiderWalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/verification': {
+      id: '/_authenticated/admin/verification'
+      path: '/admin/verification'
+      fullPath: '/admin/verification'
+      preLoaderRoute: typeof AuthenticatedAdminVerificationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/activity': {
       id: '/_authenticated/student/activity'
       path: '/student/activity'
@@ -371,6 +391,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
   AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
   AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
@@ -380,6 +401,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
   AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
   AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
