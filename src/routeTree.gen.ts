@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRiderRouteImport } from './routes/_authenticated/rider'
 import { Route as AuthenticatedRiderApplicationRouteImport } from './routes/_authenticated/rider-application'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/student'
+import { Route as AuthenticatedAdminDispatchRouteImport } from './routes/_authenticated/admin.dispatch'
 import { Route as AuthenticatedAdminLocationSuggestionsRouteImport } from './routes/_authenticated/admin.location-suggestions'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
 import { Route as AuthenticatedAdminRidersRouteImport } from './routes/_authenticated/admin.riders'
@@ -114,6 +115,12 @@ const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
   path: '/student',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminDispatchRoute =
+  AuthenticatedAdminDispatchRouteImport.update({
+    id: '/dispatch',
+    path: '/dispatch',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminLocationSuggestionsRoute =
   AuthenticatedAdminLocationSuggestionsRouteImport.update({
     id: '/location-suggestions',
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/rider': typeof AuthenticatedRiderRouteWithChildren
   '/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/student': typeof AuthenticatedStudentRouteWithChildren
+  '/admin/dispatch': typeof AuthenticatedAdminDispatchRoute
   '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/riders': typeof AuthenticatedAdminRidersRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/rider': typeof AuthenticatedRiderRouteWithChildren
   '/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/student': typeof AuthenticatedStudentRouteWithChildren
+  '/admin/dispatch': typeof AuthenticatedAdminDispatchRoute
   '/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/riders': typeof AuthenticatedAdminRidersRoute
@@ -310,6 +319,7 @@ export interface FileRoutesById {
   '/_authenticated/rider': typeof AuthenticatedRiderRouteWithChildren
   '/_authenticated/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
+  '/_authenticated/admin/dispatch': typeof AuthenticatedAdminDispatchRoute
   '/_authenticated/admin/location-suggestions': typeof AuthenticatedAdminLocationSuggestionsRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/riders': typeof AuthenticatedAdminRidersRoute
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/rider'
     | '/rider-application'
     | '/student'
+    | '/admin/dispatch'
     | '/admin/location-suggestions'
     | '/admin/locations'
     | '/admin/riders'
@@ -380,6 +391,7 @@ export interface FileRouteTypes {
     | '/rider'
     | '/rider-application'
     | '/student'
+    | '/admin/dispatch'
     | '/admin/location-suggestions'
     | '/admin/locations'
     | '/admin/riders'
@@ -415,6 +427,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rider'
     | '/_authenticated/rider-application'
     | '/_authenticated/student'
+    | '/_authenticated/admin/dispatch'
     | '/_authenticated/admin/location-suggestions'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/riders'
@@ -547,6 +560,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/student'
       preLoaderRoute: typeof AuthenticatedStudentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/dispatch': {
+      id: '/_authenticated/admin/dispatch'
+      path: '/dispatch'
+      fullPath: '/admin/dispatch'
+      preLoaderRoute: typeof AuthenticatedAdminDispatchRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/location-suggestions': {
       id: '/_authenticated/admin/location-suggestions'
@@ -685,6 +705,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminDispatchRoute: typeof AuthenticatedAdminDispatchRoute
   AuthenticatedAdminLocationSuggestionsRoute: typeof AuthenticatedAdminLocationSuggestionsRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminRidersRoute: typeof AuthenticatedAdminRidersRoute
@@ -694,6 +715,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminDispatchRoute: AuthenticatedAdminDispatchRoute,
   AuthenticatedAdminLocationSuggestionsRoute:
     AuthenticatedAdminLocationSuggestionsRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
