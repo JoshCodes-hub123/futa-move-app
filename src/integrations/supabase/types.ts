@@ -162,34 +162,120 @@ export type Database = {
       }
       student_profiles: {
         Row: {
+          avatar_path: string | null
           created_at: string
+          current_submission_id: string | null
           faculty: string | null
           full_name: string | null
           id: string
           matric_number: string | null
+          rejection_reason: string | null
+          submitted_at: string | null
           updated_at: string
           verification_status: Database["public"]["Enums"]["student_verification_status"]
           verified_at: string | null
         }
         Insert: {
+          avatar_path?: string | null
           created_at?: string
+          current_submission_id?: string | null
           faculty?: string | null
           full_name?: string | null
           id: string
           matric_number?: string | null
+          rejection_reason?: string | null
+          submitted_at?: string | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["student_verification_status"]
           verified_at?: string | null
         }
         Update: {
+          avatar_path?: string | null
           created_at?: string
+          current_submission_id?: string | null
           faculty?: string | null
           full_name?: string | null
           id?: string
           matric_number?: string | null
+          rejection_reason?: string | null
+          submitted_at?: string | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["student_verification_status"]
           verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_profiles_current_submission_fk"
+            columns: ["current_submission_id"]
+            isOneToOne: false
+            referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_submissions: {
+        Row: {
+          avatar_path: string
+          created_at: string
+          faculty: string
+          full_name: string
+          id: string
+          id_card_path: string
+          matric_number: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["student_verification_status"]
+          student_id: string
+        }
+        Insert: {
+          avatar_path: string
+          created_at?: string
+          faculty: string
+          full_name: string
+          id?: string
+          id_card_path: string
+          matric_number: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["student_verification_status"]
+          student_id: string
+        }
+        Update: {
+          avatar_path?: string
+          created_at?: string
+          faculty?: string
+          full_name?: string
+          id?: string
+          id_card_path?: string
+          matric_number?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["student_verification_status"]
+          student_id?: string
         }
         Relationships: []
       }
@@ -211,6 +297,13 @@ export type Database = {
       }
       get_ride_group: { Args: { p_group_id: string }; Returns: Json }
       group_passenger_count: { Args: { _group_id: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -256,9 +349,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      review_verification: {
+        Args: { p_approve: boolean; p_reason?: string; p_submission_id: string }
+        Returns: undefined
+      }
       ride_capacity: { Args: never; Returns: number }
+      submit_verification: {
+        Args: {
+          p_avatar_path: string
+          p_faculty: string
+          p_full_name: string
+          p_id_card_path: string
+          p_matric: string
+        }
+        Returns: string
+      }
     }
     Enums: {
+      app_role: "admin" | "user"
       ride_request_status: "draft" | "searching" | "cancelled"
       student_verification_status: "pending" | "verified" | "rejected"
     }
@@ -388,6 +496,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       ride_request_status: ["draft", "searching", "cancelled"],
       student_verification_status: ["pending", "verified", "rejected"],
     },
