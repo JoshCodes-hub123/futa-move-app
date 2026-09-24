@@ -15,14 +15,17 @@ import { Route as AccountTypeRouteImport } from './routes/account-type'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerificationRouteImport } from './routes/verification'
-import { Route as RiderHomeRouteImport } from './routes/rider.home'
-import { Route as RiderProfileRouteImport } from './routes/rider.profile'
-import { Route as RiderRequestsRouteImport } from './routes/rider.requests'
-import { Route as RiderTripsRouteImport } from './routes/rider.trips'
-import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedRiderRouteImport } from './routes/_authenticated/rider'
+import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/student'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminVerificationRouteImport } from './routes/_authenticated/admin.verification'
+import { Route as AuthenticatedRiderHomeRouteImport } from './routes/_authenticated/rider.home'
+import { Route as AuthenticatedRiderProfileRouteImport } from './routes/_authenticated/rider.profile'
+import { Route as AuthenticatedRiderRequestsRouteImport } from './routes/_authenticated/rider.requests'
+import { Route as AuthenticatedRiderTripsRouteImport } from './routes/_authenticated/rider.trips'
+import { Route as AuthenticatedRiderWalletRouteImport } from './routes/_authenticated/rider.wallet'
 import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
 import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student.profile'
@@ -59,84 +62,102 @@ const VerificationRoute = VerificationRouteImport.update({
   path: '/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RiderHomeRoute = RiderHomeRouteImport.update({
-  id: '/rider/home',
-  path: '/rider/home',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const RiderProfileRoute = RiderProfileRouteImport.update({
-  id: '/rider/profile',
-  path: '/rider/profile',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedRiderRoute = AuthenticatedRiderRouteImport.update({
+  id: '/rider',
+  path: '/rider',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const RiderRequestsRoute = RiderRequestsRouteImport.update({
-  id: '/rider/requests',
-  path: '/rider/requests',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RiderTripsRoute = RiderTripsRouteImport.update({
-  id: '/rider/trips',
-  path: '/rider/trips',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RiderWalletRoute = RiderWalletRouteImport.update({
-  id: '/rider/wallet',
-  path: '/rider/wallet',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminLocationsRoute =
   AuthenticatedAdminLocationsRouteImport.update({
-    id: '/admin/locations',
-    path: '/admin/locations',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/locations',
+    path: '/locations',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
-    id: '/admin/settings',
-    path: '/admin/settings',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminVerificationRoute =
   AuthenticatedAdminVerificationRouteImport.update({
-    id: '/admin/verification',
-    path: '/admin/verification',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/verification',
+    path: '/verification',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedRiderHomeRoute = AuthenticatedRiderHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRiderRoute,
+} as any)
+const AuthenticatedRiderProfileRoute =
+  AuthenticatedRiderProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedRiderRoute,
+  } as any)
+const AuthenticatedRiderRequestsRoute =
+  AuthenticatedRiderRequestsRouteImport.update({
+    id: '/requests',
+    path: '/requests',
+    getParentRoute: () => AuthenticatedRiderRoute,
+  } as any)
+const AuthenticatedRiderTripsRoute = AuthenticatedRiderTripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
+  getParentRoute: () => AuthenticatedRiderRoute,
+} as any)
+const AuthenticatedRiderWalletRoute =
+  AuthenticatedRiderWalletRouteImport.update({
+    id: '/wallet',
+    path: '/wallet',
+    getParentRoute: () => AuthenticatedRiderRoute,
   } as any)
 const AuthenticatedStudentActivityRoute =
   AuthenticatedStudentActivityRouteImport.update({
-    id: '/student/activity',
-    path: '/student/activity',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/activity',
+    path: '/activity',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentHomeRoute =
   AuthenticatedStudentHomeRouteImport.update({
-    id: '/student/home',
-    path: '/student/home',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/home',
+    path: '/home',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentProfileRoute =
   AuthenticatedStudentProfileRouteImport.update({
-    id: '/student/profile',
-    path: '/student/profile',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentRequestRoute =
   AuthenticatedStudentRequestRouteImport.update({
-    id: '/student/request',
-    path: '/student/request',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/request',
+    path: '/request',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentRidesIndexRoute =
   AuthenticatedStudentRidesIndexRouteImport.update({
-    id: '/student/rides/',
-    path: '/student/rides/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/rides/',
+    path: '/rides/',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 const AuthenticatedStudentRidesIdRoute =
   AuthenticatedStudentRidesIdRouteImport.update({
-    id: '/student/rides/$id',
-    path: '/student/rides/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/rides/$id',
+    path: '/rides/$id',
+    getParentRoute: () => AuthenticatedStudentRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -145,14 +166,17 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
-  '/rider/home': typeof RiderHomeRoute
-  '/rider/profile': typeof RiderProfileRoute
-  '/rider/requests': typeof RiderRequestsRoute
-  '/rider/trips': typeof RiderTripsRoute
-  '/rider/wallet': typeof RiderWalletRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/student': typeof AuthenticatedStudentRouteWithChildren
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
+  '/rider/home': typeof AuthenticatedRiderHomeRoute
+  '/rider/profile': typeof AuthenticatedRiderProfileRoute
+  '/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/rider/trips': typeof AuthenticatedRiderTripsRoute
+  '/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -166,14 +190,17 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
-  '/rider/home': typeof RiderHomeRoute
-  '/rider/profile': typeof RiderProfileRoute
-  '/rider/requests': typeof RiderRequestsRoute
-  '/rider/trips': typeof RiderTripsRoute
-  '/rider/wallet': typeof RiderWalletRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/student': typeof AuthenticatedStudentRouteWithChildren
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
+  '/rider/home': typeof AuthenticatedRiderHomeRoute
+  '/rider/profile': typeof AuthenticatedRiderProfileRoute
+  '/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/rider/trips': typeof AuthenticatedRiderTripsRoute
+  '/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -189,14 +216,17 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
-  '/rider/home': typeof RiderHomeRoute
-  '/rider/profile': typeof RiderProfileRoute
-  '/rider/requests': typeof RiderRequestsRoute
-  '/rider/trips': typeof RiderTripsRoute
-  '/rider/wallet': typeof RiderWalletRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/rider': typeof AuthenticatedRiderRouteWithChildren
+  '/_authenticated/student': typeof AuthenticatedStudentRouteWithChildren
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/verification': typeof AuthenticatedAdminVerificationRoute
+  '/_authenticated/rider/home': typeof AuthenticatedRiderHomeRoute
+  '/_authenticated/rider/profile': typeof AuthenticatedRiderProfileRoute
+  '/_authenticated/rider/requests': typeof AuthenticatedRiderRequestsRoute
+  '/_authenticated/rider/trips': typeof AuthenticatedRiderTripsRoute
+  '/_authenticated/rider/wallet': typeof AuthenticatedRiderWalletRoute
   '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
   '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -212,14 +242,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/verification'
+    | '/admin'
+    | '/rider'
+    | '/student'
+    | '/admin/locations'
+    | '/admin/settings'
+    | '/admin/verification'
     | '/rider/home'
     | '/rider/profile'
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
-    | '/admin/locations'
-    | '/admin/settings'
-    | '/admin/verification'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
@@ -233,14 +266,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/verification'
+    | '/admin'
+    | '/rider'
+    | '/student'
+    | '/admin/locations'
+    | '/admin/settings'
+    | '/admin/verification'
     | '/rider/home'
     | '/rider/profile'
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
-    | '/admin/locations'
-    | '/admin/settings'
-    | '/admin/verification'
     | '/student/activity'
     | '/student/home'
     | '/student/profile'
@@ -255,14 +291,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/verification'
-    | '/rider/home'
-    | '/rider/profile'
-    | '/rider/requests'
-    | '/rider/trips'
-    | '/rider/wallet'
+    | '/_authenticated/admin'
+    | '/_authenticated/rider'
+    | '/_authenticated/student'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/verification'
+    | '/_authenticated/rider/home'
+    | '/_authenticated/rider/profile'
+    | '/_authenticated/rider/requests'
+    | '/_authenticated/rider/trips'
+    | '/_authenticated/rider/wallet'
     | '/_authenticated/student/activity'
     | '/_authenticated/student/home'
     | '/_authenticated/student/profile'
@@ -278,11 +317,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   VerificationRoute: typeof VerificationRoute
-  RiderHomeRoute: typeof RiderHomeRoute
-  RiderProfileRoute: typeof RiderProfileRoute
-  RiderRequestsRoute: typeof RiderRequestsRoute
-  RiderTripsRoute: typeof RiderTripsRoute
-  RiderWalletRoute: typeof RiderWalletRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -329,111 +363,163 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/rider/home': {
-      id: '/rider/home'
-      path: '/rider/home'
-      fullPath: '/rider/home'
-      preLoaderRoute: typeof RiderHomeRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/rider/profile': {
-      id: '/rider/profile'
-      path: '/rider/profile'
-      fullPath: '/rider/profile'
-      preLoaderRoute: typeof RiderProfileRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/rider': {
+      id: '/_authenticated/rider'
+      path: '/rider'
+      fullPath: '/rider'
+      preLoaderRoute: typeof AuthenticatedRiderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/rider/requests': {
-      id: '/rider/requests'
-      path: '/rider/requests'
-      fullPath: '/rider/requests'
-      preLoaderRoute: typeof RiderRequestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rider/trips': {
-      id: '/rider/trips'
-      path: '/rider/trips'
-      fullPath: '/rider/trips'
-      preLoaderRoute: typeof RiderTripsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rider/wallet': {
-      id: '/rider/wallet'
-      path: '/rider/wallet'
-      fullPath: '/rider/wallet'
-      preLoaderRoute: typeof RiderWalletRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/student': {
+      id: '/_authenticated/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof AuthenticatedStudentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/locations': {
       id: '/_authenticated/admin/locations'
-      path: '/admin/locations'
+      path: '/locations'
       fullPath: '/admin/locations'
       preLoaderRoute: typeof AuthenticatedAdminLocationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
-      path: '/admin/settings'
+      path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/verification': {
       id: '/_authenticated/admin/verification'
-      path: '/admin/verification'
+      path: '/verification'
       fullPath: '/admin/verification'
       preLoaderRoute: typeof AuthenticatedAdminVerificationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/rider/home': {
+      id: '/_authenticated/rider/home'
+      path: '/home'
+      fullPath: '/rider/home'
+      preLoaderRoute: typeof AuthenticatedRiderHomeRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
+    }
+    '/_authenticated/rider/profile': {
+      id: '/_authenticated/rider/profile'
+      path: '/profile'
+      fullPath: '/rider/profile'
+      preLoaderRoute: typeof AuthenticatedRiderProfileRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
+    }
+    '/_authenticated/rider/requests': {
+      id: '/_authenticated/rider/requests'
+      path: '/requests'
+      fullPath: '/rider/requests'
+      preLoaderRoute: typeof AuthenticatedRiderRequestsRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
+    }
+    '/_authenticated/rider/trips': {
+      id: '/_authenticated/rider/trips'
+      path: '/trips'
+      fullPath: '/rider/trips'
+      preLoaderRoute: typeof AuthenticatedRiderTripsRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
+    }
+    '/_authenticated/rider/wallet': {
+      id: '/_authenticated/rider/wallet'
+      path: '/wallet'
+      fullPath: '/rider/wallet'
+      preLoaderRoute: typeof AuthenticatedRiderWalletRouteImport
+      parentRoute: typeof AuthenticatedRiderRoute
     }
     '/_authenticated/student/activity': {
       id: '/_authenticated/student/activity'
-      path: '/student/activity'
+      path: '/activity'
       fullPath: '/student/activity'
       preLoaderRoute: typeof AuthenticatedStudentActivityRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/home': {
       id: '/_authenticated/student/home'
-      path: '/student/home'
+      path: '/home'
       fullPath: '/student/home'
       preLoaderRoute: typeof AuthenticatedStudentHomeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/profile': {
       id: '/_authenticated/student/profile'
-      path: '/student/profile'
+      path: '/profile'
       fullPath: '/student/profile'
       preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/request': {
       id: '/_authenticated/student/request'
-      path: '/student/request'
+      path: '/request'
       fullPath: '/student/request'
       preLoaderRoute: typeof AuthenticatedStudentRequestRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/rides/': {
       id: '/_authenticated/student/rides/'
-      path: '/student/rides'
+      path: '/rides'
       fullPath: '/student/rides/'
       preLoaderRoute: typeof AuthenticatedStudentRidesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
     '/_authenticated/student/rides/$id': {
       id: '/_authenticated/student/rides/$id'
-      path: '/student/rides/$id'
+      path: '/rides/$id'
       fullPath: '/student/rides/$id'
       preLoaderRoute: typeof AuthenticatedStudentRidesIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedStudentRoute
     }
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
+interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRiderRouteChildren {
+  AuthenticatedRiderHomeRoute: typeof AuthenticatedRiderHomeRoute
+  AuthenticatedRiderProfileRoute: typeof AuthenticatedRiderProfileRoute
+  AuthenticatedRiderRequestsRoute: typeof AuthenticatedRiderRequestsRoute
+  AuthenticatedRiderTripsRoute: typeof AuthenticatedRiderTripsRoute
+  AuthenticatedRiderWalletRoute: typeof AuthenticatedRiderWalletRoute
+}
+
+const AuthenticatedRiderRouteChildren: AuthenticatedRiderRouteChildren = {
+  AuthenticatedRiderHomeRoute: AuthenticatedRiderHomeRoute,
+  AuthenticatedRiderProfileRoute: AuthenticatedRiderProfileRoute,
+  AuthenticatedRiderRequestsRoute: AuthenticatedRiderRequestsRoute,
+  AuthenticatedRiderTripsRoute: AuthenticatedRiderTripsRoute,
+  AuthenticatedRiderWalletRoute: AuthenticatedRiderWalletRoute,
+}
+
+const AuthenticatedRiderRouteWithChildren =
+  AuthenticatedRiderRoute._addFileChildren(AuthenticatedRiderRouteChildren)
+
+interface AuthenticatedStudentRouteChildren {
   AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
   AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
@@ -442,16 +528,28 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStudentRidesIndexRoute: typeof AuthenticatedStudentRidesIndexRoute
 }
 
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
-  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
-  AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
+const AuthenticatedStudentRouteChildren: AuthenticatedStudentRouteChildren = {
   AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
   AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
   AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentRequestRoute: AuthenticatedStudentRequestRoute,
   AuthenticatedStudentRidesIdRoute: AuthenticatedStudentRidesIdRoute,
   AuthenticatedStudentRidesIndexRoute: AuthenticatedStudentRidesIndexRoute,
+}
+
+const AuthenticatedStudentRouteWithChildren =
+  AuthenticatedStudentRoute._addFileChildren(AuthenticatedStudentRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedRiderRoute: typeof AuthenticatedRiderRouteWithChildren
+  AuthenticatedStudentRoute: typeof AuthenticatedStudentRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedRiderRoute: AuthenticatedRiderRouteWithChildren,
+  AuthenticatedStudentRoute: AuthenticatedStudentRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -464,11 +562,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   VerificationRoute: VerificationRoute,
-  RiderHomeRoute: RiderHomeRoute,
-  RiderProfileRoute: RiderProfileRoute,
-  RiderRequestsRoute: RiderRequestsRoute,
-  RiderTripsRoute: RiderTripsRoute,
-  RiderWalletRoute: RiderWalletRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
