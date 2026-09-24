@@ -67,6 +67,7 @@ export type Database = {
       }
       ride_group_members: {
         Row: {
+          confirmed_version: number | null
           group_id: string
           id: string
           joined_at: string
@@ -75,6 +76,7 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          confirmed_version?: number | null
           group_id: string
           id?: string
           joined_at?: string
@@ -83,6 +85,7 @@ export type Database = {
           student_id: string
         }
         Update: {
+          confirmed_version?: number | null
           group_id?: string
           id?: string
           joined_at?: string
@@ -114,7 +117,10 @@ export type Database = {
           departure_time: string
           destination_text: string
           id: string
+          meeting_point_location_id: string | null
+          meeting_point_note: string | null
           meeting_point_text: string
+          meeting_point_version: number
           status: string
           updated_at: string
         }
@@ -124,7 +130,10 @@ export type Database = {
           departure_time: string
           destination_text: string
           id?: string
+          meeting_point_location_id?: string | null
+          meeting_point_note?: string | null
           meeting_point_text: string
+          meeting_point_version?: number
           status?: string
           updated_at?: string
         }
@@ -134,11 +143,22 @@ export type Database = {
           departure_time?: string
           destination_text?: string
           id?: string
+          meeting_point_location_id?: string | null
+          meeting_point_note?: string | null
           meeting_point_text?: string
+          meeting_point_version?: number
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ride_groups_meeting_point_location_id_fkey"
+            columns: ["meeting_point_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ride_requests: {
         Row: {
@@ -357,6 +377,11 @@ export type Database = {
     Functions: {
       add_group_member: { Args: { p_group_id: string }; Returns: Json }
       agree_meeting_point: { Args: { p_group_id: string }; Returns: undefined }
+      claim_student_role: { Args: never; Returns: string }
+      confirm_meeting_point: {
+        Args: { p_group_id: string; p_version?: number }
+        Returns: undefined
+      }
       destinations_compatible: {
         Args: { _a: string; _b: string }
         Returns: boolean
@@ -366,7 +391,9 @@ export type Database = {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
       }
+      get_my_role: { Args: never; Returns: string }
       get_ride_group: { Args: { p_group_id: string }; Returns: Json }
+      group_organizer: { Args: { _group_id: string }; Returns: string }
       group_passenger_count: { Args: { _group_id: string }; Returns: number }
       has_role: {
         Args: {
@@ -425,6 +452,10 @@ export type Database = {
         Returns: undefined
       }
       ride_capacity: { Args: never; Returns: number }
+      set_meeting_point: {
+        Args: { p_group_id: string; p_location_id: string; p_note?: string }
+        Returns: undefined
+      }
       submit_verification: {
         Args: {
           p_avatar_path: string

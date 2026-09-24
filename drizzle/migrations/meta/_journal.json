@@ -43,6 +43,13 @@
       "when": 1790266326738,
       "tag": "0005_app_role_student_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790266392583,
+      "tag": "0006_roles_and_structured_meeting_point",
+      "breakpoints": true
     }
   ]
 }
