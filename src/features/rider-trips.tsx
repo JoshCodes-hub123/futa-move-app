@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatDepartureTime } from "@/services/ride-requests";
-import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, type Availability, type RideOffer } from "@/services/dispatch";
+import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, shareMyLocation, type Availability, type RideOffer } from "@/services/dispatch";
 import {
   ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, withdrawTrip,
   type Trip, type TripStatus,
@@ -136,6 +136,13 @@ export function RiderOperations() {
   };
   const setAvail = useMutation({ mutationFn: setMyAvailability, onSuccess: refresh });
   const claim = useMutation({ mutationFn: claimTrip, onSuccess: refresh, onError: refresh });
+  // While online, share the real device position every minute so closer riders can be preferred.
+  useEffect(() => {
+    if (!online) return;
+    void shareMyLocation().catch(() => undefined);
+    const t = setInterval(() => void shareMyLocation().catch(() => undefined), 60000);
+    return () => clearInterval(t);
+  }, [online]);
   const current = mine.data?.find((t) => ACTIVE_TRIP_STATUSES.includes(t.status as TripStatus));
   const offer = online && !current ? offers.data?.[0] : undefined;
   const hasOffer = !!offers.data?.length;

@@ -277,6 +277,38 @@ export type Database = {
           },
         ]
       }
+      ride_group_messages: {
+        Row: {
+          body: string
+          created_at: string
+          group_id: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          group_id: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "ride_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_groups: {
         Row: {
           created_at: string
@@ -971,6 +1003,7 @@ export type Database = {
       }
       get_my_role: { Args: never; Returns: string }
       get_ride_group: { Args: { p_group_id: string }; Returns: Json }
+      group_chat_open: { Args: { _group_id: string }; Returns: boolean }
       group_organizer: { Args: { _group_id: string }; Returns: string }
       group_passenger_count: { Args: { _group_id: string }; Returns: number }
       has_role: {
@@ -986,6 +1019,16 @@ export type Database = {
       }
       is_verified_student: { Args: { _user_id: string }; Returns: boolean }
       leave_ride_group: { Args: { p_group_id: string }; Returns: undefined }
+      list_group_messages: {
+        Args: { p_group_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          first_name: string
+          id: string
+          is_me: boolean
+        }[]
+      }
       log_dispatch: {
         Args: {
           _from: string
@@ -1114,11 +1157,19 @@ export type Database = {
         Args: { p_reason: string; p_trip_id: string }
         Returns: undefined
       }
+      send_group_message: {
+        Args: { p_body: string; p_group_id: string }
+        Returns: string
+      }
       set_meeting_point: {
         Args: { p_group_id: string; p_location_id: string; p_note?: string }
         Returns: undefined
       }
       set_my_availability: { Args: { p_status: string }; Returns: string }
+      set_my_location: {
+        Args: { p_accuracy: number; p_lat: number; p_lng: number }
+        Returns: undefined
+      }
       student_dispatch_ping: {
         Args: { p_group_id: string }
         Returns: undefined

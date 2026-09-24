@@ -18,6 +18,7 @@ const WEIGHTS: { key: string; label: string }[] = [
   { key: "no_show", label: "Minus per rider no-show" },
   { key: "idle_hour", label: "Plus per hour since last ride (max 24)" },
   { key: "offer_idle_hour", label: "Plus per hour since last offer (max 24)" },
+  { key: "proximity", label: "Closeness bonus (full at meeting point, 0 beyond 3 km)" },
 ];
 
 function SettingsForm() {

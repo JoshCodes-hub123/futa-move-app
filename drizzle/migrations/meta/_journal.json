@@ -71,6 +71,13 @@
       "when": 1790273414398,
       "tag": "0009_smart_dispatch",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790289673673,
+      "tag": "0010_pairing_chat_proximity_cancel_guard",
+      "breakpoints": true
     }
   ]
 }

@@ -18,21 +18,32 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
-import { confirmRide, isCancelled, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
+import { confirmRide, isCancelled, isTerminal, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
+import { GroupChat } from "@/features/group-chat";
 import { pingDispatch } from "@/services/dispatch";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
 
-function StatusPill({ status }: { status: RideRequest["status"] }) {
-  const label = status === "searching" ? "Searching" : status === "cancelled" ? "Cancelled" : "Draft";
-  const variant = status === "searching" ? "warning" : "outline";
+/**
+ * Displayed status is derived from the authoritative record: the trip when one exists,
+ * otherwise the ride request. A completed trip therefore never shows "Searching".
+ */
+function StatusPill({ status, trip }: { status: RideRequest["status"]; trip?: TripStatus | undefined }) {
+  const kind: "live" | "done" | "off" =
+    trip === "completed" ? "done" : (trip && isTerminal(trip)) || status !== "searching" ? "off" : "live";
+  const label = trip === "completed" ? "Completed" : trip && isCancelled(trip) ? "Cancelled" : trip ? "Active" : status === "searching" ? "Searching" : status === "cancelled" ? "Cancelled" : "Draft";
   return (
-    <Badge variant={variant} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
-      <span className={status === "searching" ? "size-1.5 animate-pulse rounded-full bg-warning" : "size-1.5 rounded-full bg-muted-foreground"} />
+    <Badge variant={kind === "live" ? "warning" : kind === "done" ? "success" : "outline"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
+      <span className={kind === "live" ? "size-1.5 animate-pulse rounded-full bg-warning" : kind === "done" ? "size-1.5 rounded-full bg-success" : "size-1.5 rounded-full bg-muted-foreground"} />
       {label}
     </Badge>
   );
+}
+
+/** Pickup onward, or once the ride has ended, cancelling is no longer allowed (the database enforces this too). */
+function tripBlocksCancel(t?: TripStatus) {
+  return !!t && (t === "picked_up" || t === "in_progress" || isTerminal(t));
 }
 
 function RequestRow({ request, trip, dispatchState }: { request: RideRequest; trip?: TripStatus | undefined; dispatchState?: string | undefined }) {
@@ -51,7 +62,7 @@ function RequestRow({ request, trip, dispatchState }: { request: RideRequest; tr
         <p className="mt-1.5 text-xs text-muted-foreground">{formatDepartureTime(request.departure_time)}</p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <StatusPill status={request.status} />
+        <StatusPill status={request.status} trip={request.group_id ? trip : undefined} />
         <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </div>
     </Link>
@@ -146,15 +157,21 @@ export function RideRequestDetailPage({ id }: { id: string }) {
     queryFn: () => getRideRequest(id),
   });
 
+  const trips = useQuery({ queryKey: ["my-group-trips"], queryFn: listMyGroupTrips, refetchInterval: 10000 });
+  const tripStatus = data?.group_id ? (trips.data?.find((t) => t.group_id === data.group_id)?.status as TripStatus | undefined) : undefined;
   const cancel = useMutation({
     mutationFn: () => cancelRideRequest(id),
-    onSuccess: async () => {
+    onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: rideRequestsKey });
+      await queryClient.invalidateQueries({ queryKey: ["my-group-trips"] });
+      await queryClient.invalidateQueries({ queryKey: ["ride-group"] });
     },
   });
 
   const isSearching = data?.status === "searching";
   const isShared = data?.ride_type === "shared";
+  const canCancel = isSearching && !tripBlocksCancel(tripStatus);
+  const chatOpen = isSearching && !!data?.group_id && !(tripStatus && isTerminal(tripStatus));
 
   return (
     <AppShell role="student">
@@ -226,13 +243,17 @@ export function RideRequestDetailPage({ id }: { id: string }) {
               </>
             )}
 
+            {chatOpen && data.group_id && <GroupChat groupId={data.group_id} />}
+
             {cancel.isError && (
               <p className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">
-                We couldn't cancel this request. Check your connection and try again.
+                {cancel.error.message.includes("RIDE_CANNOT_BE_CANCELLED")
+                  ? cancel.error.message.replace(/^.*RIDE_CANNOT_BE_CANCELLED:\s*/, "")
+                  : "We couldn't cancel this request. Check your connection and try again."}
               </p>
             )}
 
-            {isSearching && (
+            {canCancel && (
               <div className="mt-7">
                 <ConfirmationDialog
                   trigger={
