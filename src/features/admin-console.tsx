@@ -32,6 +32,7 @@ export function AdminNav() {
       <Link to="/admin/verification" className={link} activeProps={active}>Verification</Link>
       <Link to="/admin/locations" className={link} activeProps={active}>Locations</Link>
       <Link to="/admin/location-suggestions" className={link} activeProps={active}>Location Suggestions</Link>
+      <Link to="/admin/rides" className={link} activeProps={active}>Rides</Link>
       <Link to="/admin/riders" className={link} activeProps={active}>Riders</Link>
       <Link to="/admin/settings" className={link} activeProps={active}>Settings</Link>
     </nav>

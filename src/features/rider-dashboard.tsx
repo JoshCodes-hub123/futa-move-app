@@ -6,6 +6,7 @@ import { EmptyState, LoadingState, RowLink, ScreenHeader, SectionHeading } from 
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { signOutEverywhere } from "@/features/auth-pages";
+import { RiderOperations } from "@/features/rider-trips";
 import { getMyRiderApplication, riderDocumentUrl, RIDER_STATUS_LABEL } from "@/services/riders";
 
 function useRider() {
@@ -35,14 +36,9 @@ export function RiderHomePage() {
       <ScreenHeader eyebrow="Rider dashboard" title={a ? `Hi, ${a.full_name.split(" ")[0]}` : "Rider dashboard"} />
       {app.isLoading ? <LoadingState /> : a ? <>
         <Identity name={a.full_name} photo={photo} meta={`${a.vehicle_description}${a.plate_number ? ` · ${a.plate_number}` : ""}`} status={RIDER_STATUS_LABEL[a.status]} />
-        <section className="mt-8 surface-panel p-5 text-sm leading-6">
-          <p className="section-label">Rider status</p>
-          <p className="mt-2">Your rider account is approved{a.reviewed_at ? ` since ${new Date(a.reviewed_at).toLocaleDateString()}` : ""}. Ride requests and trips will be added in a later update.</p>
-        </section>
+        <RiderOperations />
       </> : <p className="mt-6 text-sm text-muted-foreground">No rider details found.</p>}
-      <section className="mt-10 space-y-4">
-        <SectionHeading title="Trips" />
-        <div className="surface-panel"><EmptyState compact title="No trips yet" description="Trips will appear here once ride assignment is available." icon={CalendarClock} /></div>
+      <section className="mt-8 space-y-4">
         <Button asChild variant="secondary" className="w-full"><Link to="/rider/suggest-location"><MapPinPlus /> Suggest a pickup location</Link></Button>
       </section>
     </AppShell>

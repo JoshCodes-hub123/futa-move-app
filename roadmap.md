@@ -13,3 +13,4 @@
 - [x] Structured group meeting point (locations), per-member confirmation, reset on change/deactivation
 - [x] Rider registration + admin approval/reject/suspend (/admin/riders)
 - [x] Community location suggestions + admin review into locations (/admin/location-suggestions)
+- [x] Ride lifecycle: confirm ride, trips, rider accept/advance, admin /admin/rides, audit history
