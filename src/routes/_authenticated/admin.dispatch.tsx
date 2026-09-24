@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AdminDispatchPage } from "@/features/admin-dispatch";
+export const Route = createFileRoute("/_authenticated/admin/dispatch")({ head: () => ({ meta: [{ title: "Dispatch — Admin — FUTAMOVE" }, { name: "description", content: "Rider availability, fairness and dispatch settings." }, { property: "og:title", content: "Dispatch — Admin — FUTAMOVE" }, { property: "og:description", content: "Rider availability, fairness and dispatch settings." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: AdminDispatchPage });
