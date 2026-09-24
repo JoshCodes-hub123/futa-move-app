@@ -5,6 +5,7 @@ import { ArrowLeft, Check, ShieldCheck, X } from "lucide-react";
 import { Brand } from "@/components/futamove/brand";
 import { EmptyState, LoadingState } from "@/components/futamove/primitives";
 import { Button } from "@/components/ui/button";
+import { AdminNav } from "@/features/admin-console";
 import { Textarea } from "@/components/ui/textarea";
 import { amIAdmin, listPendingSubmissions, reviewSubmission, signedImageUrl, type VerificationSubmission } from "@/services/student-profile";
 
@@ -59,6 +60,7 @@ export function AdminVerificationPage() {
     <main className="min-h-screen bg-background px-5 py-8 sm:px-10">
       <div className="mx-auto max-w-5xl">
         <header className="flex items-center justify-between"><Brand compact /><Link to="/student/home" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Back to app</Link></header>
+        <AdminNav />
         <h1 className="display-title mt-10 text-3xl">Student verification</h1>
         <p className="mt-2 text-sm text-muted-foreground">Review pending submissions. Approving lets the student join shared ride matching.</p>
         <div className="mt-8 divider-list border-t border-border">

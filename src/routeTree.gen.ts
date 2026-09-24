@@ -20,6 +20,8 @@ import { Route as RiderProfileRouteImport } from './routes/rider.profile'
 import { Route as RiderRequestsRouteImport } from './routes/rider.requests'
 import { Route as RiderTripsRouteImport } from './routes/rider.trips'
 import { Route as RiderWalletRouteImport } from './routes/rider.wallet'
+import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminVerificationRouteImport } from './routes/_authenticated/admin.verification'
 import { Route as AuthenticatedStudentActivityRouteImport } from './routes/_authenticated/student.activity'
 import { Route as AuthenticatedStudentHomeRouteImport } from './routes/_authenticated/student.home'
@@ -82,6 +84,18 @@ const RiderWalletRoute = RiderWalletRouteImport.update({
   path: '/rider/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminLocationsRoute =
+  AuthenticatedAdminLocationsRouteImport.update({
+    id: '/admin/locations',
+    path: '/admin/locations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/admin/settings',
+    path: '/admin/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminVerificationRoute =
   AuthenticatedAdminVerificationRouteImport.update({
     id: '/admin/verification',
@@ -136,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
@@ -155,6 +171,8 @@ export interface FileRoutesByTo {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/student/activity': typeof AuthenticatedStudentActivityRoute
   '/student/home': typeof AuthenticatedStudentHomeRoute
@@ -176,6 +194,8 @@ export interface FileRoutesById {
   '/rider/requests': typeof RiderRequestsRoute
   '/rider/trips': typeof RiderTripsRoute
   '/rider/wallet': typeof RiderWalletRoute
+  '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/verification': typeof AuthenticatedAdminVerificationRoute
   '/_authenticated/student/activity': typeof AuthenticatedStudentActivityRoute
   '/_authenticated/student/home': typeof AuthenticatedStudentHomeRoute
@@ -197,6 +217,8 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/admin/locations'
+    | '/admin/settings'
     | '/admin/verification'
     | '/student/activity'
     | '/student/home'
@@ -216,6 +238,8 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/admin/locations'
+    | '/admin/settings'
     | '/admin/verification'
     | '/student/activity'
     | '/student/home'
@@ -236,6 +260,8 @@ export interface FileRouteTypes {
     | '/rider/requests'
     | '/rider/trips'
     | '/rider/wallet'
+    | '/_authenticated/admin/locations'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/verification'
     | '/_authenticated/student/activity'
     | '/_authenticated/student/home'
@@ -338,6 +364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RiderWalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/locations': {
+      id: '/_authenticated/admin/locations'
+      path: '/admin/locations'
+      fullPath: '/admin/locations'
+      preLoaderRoute: typeof AuthenticatedAdminLocationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/verification': {
       id: '/_authenticated/admin/verification'
       path: '/admin/verification'
@@ -391,6 +431,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
   AuthenticatedStudentActivityRoute: typeof AuthenticatedStudentActivityRoute
   AuthenticatedStudentHomeRoute: typeof AuthenticatedStudentHomeRoute
@@ -401,6 +443,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
   AuthenticatedStudentActivityRoute: AuthenticatedStudentActivityRoute,
   AuthenticatedStudentHomeRoute: AuthenticatedStudentHomeRoute,
