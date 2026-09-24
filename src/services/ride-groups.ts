@@ -70,6 +70,6 @@ export async function leaveRideGroup(groupId: string): Promise<void> {
 }
 
 export async function setMeetingPoint(groupId: string, locationId: string, note: string): Promise<void> {
-  const { error } = await supabase.rpc("set_meeting_point", { p_group_id: groupId, p_location_id: locationId, p_note: note.trim() || undefined });
+  const { error } = await supabase.rpc("set_meeting_point", { p_group_id: groupId, p_location_id: locationId, p_note: note.trim() });
   if (error) throw new RideGroupError(error.message);
 }
