@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { SuggestLocationPage } from "@/features/suggest-location";
+export const Route = createFileRoute("/_authenticated/student/suggest-location")({ head: () => ({ meta: [{ title: "Suggest a location — FUTAMOVE" }, { name: "description", content: "Suggest a new FUTAMOVE pickup point or destination." }, { property: "og:title", content: "Suggest a location — FUTAMOVE" }, { property: "og:description", content: "Suggest a new FUTAMOVE pickup point or destination." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <SuggestLocationPage role="student" /> });

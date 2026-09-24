@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AdminLocationSuggestionsPage } from "@/features/admin-location-suggestions";
+export const Route = createFileRoute("/_authenticated/admin/location-suggestions")({ head: () => ({ meta: [{ title: "Location suggestions — Admin — FUTAMOVE" }, { name: "description", content: "Review community location suggestions." }, { property: "og:title", content: "Location suggestions — Admin — FUTAMOVE" }, { property: "og:description", content: "Review community location suggestions." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: AdminLocationSuggestionsPage });
