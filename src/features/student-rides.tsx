@@ -18,7 +18,7 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
-import { confirmRide, isCancelled, listMyGroupTrips, STUDENT_TRIP_LABEL, studentTripLabel, type TripStatus } from "@/services/trips";
+import { confirmRide, isCancelled, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
 import { pingDispatch } from "@/services/dispatch";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
