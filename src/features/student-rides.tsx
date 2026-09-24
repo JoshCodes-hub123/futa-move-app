@@ -62,6 +62,7 @@ export function StudentRidesPage() {
   const { data, isLoading, isError } = useQuery({ queryKey: rideRequestsKey, queryFn: listRideRequests });
   const trips = useQuery({ queryKey: ["my-group-trips"], queryFn: listMyGroupTrips, refetchInterval: 10000 });
   const tripOf = (r: RideRequest) => (r.group_id ? (trips.data?.find((t) => t.group_id === r.group_id)?.status as TripStatus | undefined) : undefined);
+  const dispatchOf = (r: RideRequest) => (r.group_id ? (trips.data?.find((t) => t.group_id === r.group_id)?.dispatch_state ?? undefined) : undefined);
   const finished = (r: RideRequest) => { const t = tripOf(r); return !!t && (t === "completed" || isCancelled(t)); };
   const active = (data ?? []).filter((r) => r.status === "searching" && !finished(r));
   const past = (data ?? []).filter((r) => r.status !== "searching" || finished(r));
@@ -101,7 +102,7 @@ export function StudentRidesPage() {
             {active.length ? (
               <div className="mt-2 divider-list">
                 {active.map((request) => (
-                  <RequestRow key={request.id} request={request} trip={tripOf(request)} />
+                  <RequestRow key={request.id} request={request} trip={tripOf(request)} dispatchState={dispatchOf(request)} />
                 ))}
               </div>
             ) : (
@@ -126,7 +127,7 @@ export function StudentRidesPage() {
               <SectionHeading title="Ride history" />
               <div className="mt-2 divider-list">
                 {past.map((request) => (
-                  <RequestRow key={request.id} request={request} trip={tripOf(request)} />
+                  <RequestRow key={request.id} request={request} trip={tripOf(request)} dispatchState={dispatchOf(request)} />
                 ))}
               </div>
             </section>
@@ -547,7 +548,8 @@ function MeetingPointSection({ g, onChanged }: { g: RideGroup; onChanged: () => 
 
 const STUDENT_STEPS: { key: TripStatus; label: string; at: keyof NonNullable<RideGroup["trip"]> | null }[] = [
   { key: "confirmed", label: "Ride confirmed", at: null },
-  { key: "accepted", label: "Rider assigned", at: "accepted_at" },
+  { key: "assigned", label: "Rider assigned", at: "assigned_at" },
+  { key: "accepted", label: "Rider accepted", at: "accepted_at" },
   { key: "arriving", label: "Rider on the way", at: "arriving_at" },
   { key: "picked_up", label: "Picked up", at: "picked_up_at" },
   { key: "in_progress", label: "Ride in progress", at: "started_at" },
@@ -560,15 +562,27 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
   const cancelled = isCancelled(t.status);
   const idx = STEP_ORDER.indexOf(t.status);
   const done = t.status === "completed";
+  const label = studentTripLabel(t.status, t.dispatch_state, t.confirmed_at);
+  const waiting = t.status === "confirmed" || t.status === "assigned";
+  useEffect(() => {
+    if (t.status !== "confirmed") return;
+    void pingDispatch(g.id);
+    const id = window.setInterval(() => void pingDispatch(g.id), 20000);
+    return () => window.clearInterval(id);
+  }, [g.id, t.status]);
   return (
     <>
       <p className="section-label">Your ride</p>
-      <h1 className="display-title mt-2 text-[2rem]">{STUDENT_TRIP_LABEL[t.status]}</h1>
+      <h1 className="display-title mt-2 text-[2rem]">{label}</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {cancelled
           ? t.cancel_reason ?? "This ride was cancelled."
-          : t.status === "confirmed" || t.status === "assigned"
-            ? "Everyone confirmed. FUTAMOVE is finding a keke rider for your group."
+          : waiting
+            ? t.dispatch_state === "escalated"
+              ? "We haven't found a rider yet, so the FUTAMOVE team is arranging one for your group. Stay close to the meeting point."
+              : t.status === "assigned"
+                ? "A rider has been assigned and is confirming the ride."
+                : "Everyone confirmed. FUTAMOVE is finding a keke rider for your group."
             : t.status === "accepted"
               ? "A rider has accepted your ride. Be at the meeting point on time."
               : t.status === "arriving"
@@ -582,7 +596,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
       <div className="mt-6 flex items-center justify-between">
         <Badge variant={cancelled ? "outline" : done ? "success" : "warning"} className="gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold">
           {!cancelled && !done && <span className="size-1.5 animate-pulse rounded-full bg-warning" />}
-          {STUDENT_TRIP_LABEL[t.status]}
+          {label}
         </Badge>
         <span className="text-sm font-semibold">{g.passenger_count} {g.passenger_count === 1 ? "passenger" : "passengers"}</span>
       </div>
