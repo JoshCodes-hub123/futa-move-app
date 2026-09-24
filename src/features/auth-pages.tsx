@@ -117,11 +117,12 @@ export function AccountSetupPage() {
     <Shell title="Account setup required" description="Your account doesn't have a FUTAMOVE role yet.">
       <div className="surface-panel flex gap-3 p-4 text-sm leading-6">
         <ShieldAlert className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-        <p>If you're a FUTA student, finish setting up your student account below. Rider and administrator accounts are set up by the FUTAMOVE team — contact them if that's you.</p>
+        <p>If you're a FUTA student, finish setting up your student account below. If you're a keke rider, apply below — the FUTAMOVE team will review your application.</p>
       </div>
       {error && <Msg ok={false} text={error} />}
       <Button size="lg" className="mt-6 w-full" disabled={busy} onClick={() => void setUpStudent()}>Set up my student account</Button>
-      <Button variant="secondary" size="lg" className="mt-3 w-full" onClick={() => void signOutEverywhere(qc, navigate)}>Sign out</Button>
+      <Button variant="secondary" size="lg" className="mt-3 w-full" asChild><Link to="/rider-application">Apply as a keke rider</Link></Button>
+      <Button variant="ghost" size="lg" className="mt-3 w-full" onClick={() => void signOutEverywhere(qc, navigate)}>Sign out</Button>
     </Shell>
   );
 }

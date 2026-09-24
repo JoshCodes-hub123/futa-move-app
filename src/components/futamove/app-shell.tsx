@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, CarFront, CircleUserRound, Home, Route, WalletCards, ClipboardList } from "lucide-react";
+import { Activity, CarFront, CircleUserRound, Home, MapPinPlus } from "lucide-react";
 import { Brand } from "./brand";
 import { cn } from "@/lib/utils";
 
@@ -9,13 +9,12 @@ const nav = {
     { label: "Home", to: "/student/home", icon: Home },
     { label: "Rides", to: "/student/rides", icon: CarFront },
     { label: "Activity", to: "/student/activity", icon: Activity },
+    { label: "Suggest", to: "/student/suggest-location", icon: MapPinPlus },
     { label: "Profile", to: "/student/profile", icon: CircleUserRound },
   ],
   rider: [
     { label: "Home", to: "/rider/home", icon: Home },
-    { label: "Requests", to: "/rider/requests", icon: ClipboardList },
-    { label: "Trips", to: "/rider/trips", icon: Route },
-    { label: "Wallet", to: "/rider/wallet", icon: WalletCards },
+    { label: "Suggest", to: "/rider/suggest-location", icon: MapPinPlus },
     { label: "Profile", to: "/rider/profile", icon: CircleUserRound },
   ],
 } as const;
@@ -53,7 +52,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-safe backdrop-blur-xl lg:hidden">
-        <div className={cn("mx-auto grid h-16 max-w-app items-center px-2 sm:px-6", role === "rider" ? "grid-cols-5" : "grid-cols-4")}>
+        <div className={cn("mx-auto grid h-16 max-w-app items-center px-2 sm:px-6", nav[role].length === 5 ? "grid-cols-5" : "grid-cols-3")}>
           {nav[role].map(({ label, to, icon: Icon }) => {
             const active = pathname === to;
             return (
