@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { fmtTime, STUDENT_TRIP_LABEL, type TripStatus } from "@/services/trips";
 
 type Tone = "ride" | "group" | "done" | "bad" | "verify";
-interface ActivityItem { id: string; at: string; title: string; detail: string; tone: Tone; href?: string }
+interface ActivityItem { id: string; at: string; title: string; detail: string; tone: Tone; href?: string | undefined }
 
 const TRIP_DETAIL: Partial<Record<TripStatus, (d: string) => string>> = {
   confirmed: (d) => `Your ride to ${d} was confirmed. Finding a rider.`,
