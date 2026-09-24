@@ -29,6 +29,7 @@ interface FieldErrors {
   origin?: string | undefined;
   destination?: string | undefined;
   time?: string | undefined;
+  meetingPoint?: string | undefined;
 }
 
 interface Coords {
@@ -49,6 +50,7 @@ export function RideRequestPage({
   const [origin, setOrigin] = useState(initialOrigin);
   const [originCoords, setOriginCoords] = useState<Coords>({ latitude: null, longitude: null });
   const [destination, setDestination] = useState(initialDestination);
+  const [meetingPoint, setMeetingPoint] = useState("");
   const [departure, setDeparture] = useState<string>(new Date().toISOString());
   const [useNow, setUseNow] = useState(true);
 
@@ -91,6 +93,7 @@ export function RideRequestPage({
     const next: FieldErrors = {};
     if (!origin.trim()) next.origin = "Add your current location.";
     if (!destination.trim()) next.destination = "Add where you're going.";
+    if (!meetingPoint.trim()) next.meetingPoint = "Suggest a meeting point for your group.";
     setErrors(next);
     if (Object.keys(next).length === 0) setStep("time");
   }
@@ -122,6 +125,7 @@ export function RideRequestPage({
         originLongitude: originCoords.longitude,
         destinationText: destination,
         departureTime: useNow ? new Date().toISOString() : departure,
+        meetingPointText: meetingPoint,
       });
       await navigate({ to: "/student/rides/$id", params: { id: created.id } });
     } catch (error) {
@@ -191,6 +195,27 @@ export function RideRequestPage({
 
             {errors.origin && <FieldError>{errors.origin}</FieldError>}
             {errors.destination && <FieldError>{errors.destination}</FieldError>}
+
+            <div className="mt-6">
+              <Label htmlFor="meeting-point" className="text-[0.8125rem] font-medium">
+                Meeting point
+              </Label>
+              <Input
+                id="meeting-point"
+                className="mt-2"
+                placeholder="e.g. SUB car park"
+                value={meetingPoint}
+                aria-invalid={errors.meetingPoint ? true : undefined}
+                onChange={(event) => {
+                  setMeetingPoint(event.target.value);
+                  setErrors((e) => ({ ...e, meetingPoint: undefined }));
+                }}
+              />
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Where your group should gather. Everyone in the group confirms it before moving on.
+              </p>
+              {errors.meetingPoint && <FieldError>{errors.meetingPoint}</FieldError>}
+            </div>
 
             <Button variant="secondary" className="mt-4 w-full" onClick={detectLocation} disabled={locating}>
               {locating ? <Loader2 className="animate-spin" /> : <LocateFixed />}

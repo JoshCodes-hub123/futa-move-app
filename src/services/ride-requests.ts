@@ -11,6 +11,7 @@ export interface RideRequestDraft {
   destinationText: string;
   destinationLatitude?: number | null;
   destinationLongitude?: number | null;
+  meetingPointText: string;
   /** ISO timestamp */
   departureTime: string;
 }
@@ -35,6 +36,7 @@ export async function createRideRequest(draft: RideRequestDraft): Promise<RideRe
       destination_latitude: draft.destinationLatitude ?? null,
       destination_longitude: draft.destinationLongitude ?? null,
       departure_time: draft.departureTime,
+      meeting_point_text: draft.meetingPointText.trim(),
       status: "searching",
     })
     .select()
