@@ -8,7 +8,6 @@ export interface RideRequestDraft {
   /** Both come from the same unified locations table. The database snapshots name/coords into the text columns. */
   originLocationId: string;
   destinationLocationId: string;
-  meetingPointText: string;
   partySize: number;
   rideType: "shared" | "private";
   /** ISO timestamp */
@@ -37,7 +36,6 @@ export async function createRideRequest(draft: RideRequestDraft): Promise<RideRe
       origin_text: "-",
       destination_text: "-",
       departure_time: draft.departureTime,
-      meeting_point_text: draft.meetingPointText.trim(),
       party_size: draft.partySize,
       ride_type: draft.rideType,
       status: "searching",

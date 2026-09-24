@@ -24,6 +24,13 @@ export interface RideGroup {
   destination_text: string;
   departure_time: string;
   meeting_point_text: string;
+  /** Authoritative meeting point (approved location); text is the display snapshot. */
+  meeting_point_location_id: string | null;
+  meeting_point_active: boolean;
+  meeting_point_note: string | null;
+  meeting_point_version: number;
+  my_origin_text: string | null;
+  can_manage_meeting_point: boolean;
   status: "forming" | "ready" | "cancelled" | "completed";
   capacity: number;
   passenger_count: number;
@@ -51,12 +58,18 @@ export async function addGroupMember(groupId: string): Promise<{ added: boolean;
   return data as unknown as { added: boolean; reason?: "full" | "none_available" };
 }
 
-export async function agreeMeetingPoint(groupId: string): Promise<void> {
-  const { error } = await supabase.rpc("agree_meeting_point", { p_group_id: groupId });
+/** Confirms the specific proposal the student saw; fails if it changed meanwhile. */
+export async function confirmMeetingPoint(groupId: string, version: number): Promise<void> {
+  const { error } = await supabase.rpc("confirm_meeting_point", { p_group_id: groupId, p_version: version });
   if (error) throw new RideGroupError(error.message);
 }
 
 export async function leaveRideGroup(groupId: string): Promise<void> {
   const { error } = await supabase.rpc("leave_ride_group", { p_group_id: groupId });
+  if (error) throw new RideGroupError(error.message);
+}
+
+export async function setMeetingPoint(groupId: string, locationId: string, note: string): Promise<void> {
+  const { error } = await supabase.rpc("set_meeting_point", { p_group_id: groupId, p_location_id: locationId, p_note: note.trim() || undefined });
   if (error) throw new RideGroupError(error.message);
 }

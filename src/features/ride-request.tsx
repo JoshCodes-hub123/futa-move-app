@@ -53,7 +53,6 @@ export function RideRequestPage({
   const destinationLoc = locations.find((l) => l.id === (destinationId || byName(initialDestination)));
   const origin = originLoc?.name ?? "";
   const destination = destinationLoc?.name ?? "";
-  const [meetingPoint, setMeetingPoint] = useState("");
   const [rideType, setRideType] = useState<"shared" | "private">("shared");
   const [partySize, setPartySize] = useState(1);
   const [departure, setDeparture] = useState<string>(new Date().toISOString());
@@ -71,7 +70,6 @@ export function RideRequestPage({
     if (!destinationLoc) next.destination = "Choose where you're going.";
     else if (originLoc && originLoc.id === destinationLoc.id)
       next.destination = "Your current location and destination are the same. Choose a different destination.";
-    if (!meetingPoint.trim()) next.meetingPoint = "Suggest a meeting point for your group.";
     setErrors(next);
     if (Object.keys(next).length === 0) setStep("time");
   }
@@ -101,7 +99,6 @@ export function RideRequestPage({
         originLocationId: originLoc!.id,
         destinationLocationId: destinationLoc!.id,
         departureTime: useNow ? new Date().toISOString() : departure,
-        meetingPointText: meetingPoint,
         partySize,
         rideType,
       });
@@ -217,26 +214,9 @@ export function RideRequestPage({
             {errors.origin && <FieldError>{errors.origin}</FieldError>}
             {errors.destination && <FieldError>{errors.destination}</FieldError>}
 
-            <div className="mt-6">
-              <Label htmlFor="meeting-point" className="text-[0.8125rem] font-medium">
-                Meeting point
-              </Label>
-              <Input
-                id="meeting-point"
-                className="mt-2"
-                placeholder="e.g. SUB car park"
-                value={meetingPoint}
-                aria-invalid={errors.meetingPoint ? true : undefined}
-                onChange={(event) => {
-                  setMeetingPoint(event.target.value);
-                  setErrors((e) => ({ ...e, meetingPoint: undefined }));
-                }}
-              />
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                Where your group should gather. Everyone in the group confirms it before moving on.
-              </p>
-              {errors.meetingPoint && <FieldError>{errors.meetingPoint}</FieldError>}
-            </div>
+            <p className="mt-4 text-xs leading-5 text-muted-foreground">
+              If you're matched, your current location becomes the group's suggested meeting point. Everyone confirms it before moving on.
+            </p>
 
             <Button size="lg" className="mt-7 w-full" onClick={continueFromRoute}>
               Continue
@@ -316,7 +296,6 @@ export function RideRequestPage({
                 origin={origin}
                 destination={destination}
                 departure={useNow ? new Date().toISOString() : departure}
-                meetingPoint={meetingPoint}
               />
               <p className="mt-3 text-sm text-muted-foreground">
                 {rideType === "shared" ? "Shared ride" : "Private keke"} · {partySize} {partySize === 1 ? "person" : "people"}
