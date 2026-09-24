@@ -12,6 +12,10 @@ export interface RideRequestDraft {
   destinationLatitude?: number | null;
   destinationLongitude?: number | null;
   meetingPointText: string;
+  partySize: number;
+  rideType: "shared" | "private";
+  originPointId?: string | null;
+  destinationPointId?: string | null;
   /** ISO timestamp */
   departureTime: string;
 }
@@ -37,6 +41,10 @@ export async function createRideRequest(draft: RideRequestDraft): Promise<RideRe
       destination_longitude: draft.destinationLongitude ?? null,
       departure_time: draft.departureTime,
       meeting_point_text: draft.meetingPointText.trim(),
+      party_size: draft.partySize,
+      ride_type: draft.rideType,
+      origin_point_id: draft.originPointId ?? null,
+      destination_point_id: draft.destinationPointId ?? null,
       status: "searching",
     })
     .select()
@@ -75,6 +83,16 @@ export async function cancelRideRequest(id: string): Promise<RideRequest> {
   if (error || !data) throw new RideRequestError(error?.message ?? "We couldn't cancel this request.");
   return data;
 }
+
+/** Known FUTA pickup/drop-off points. Picking one gives exact point matching. */
+export const FUTA_POINTS: { id: string; name: string }[] = [
+  { id: "futa-north-gate", name: "FUTA North Gate" },
+  { id: "futa-south-gate", name: "FUTA South Gate" },
+  { id: "futa-sub", name: "Student Union Building (SUB)" },
+  { id: "obanla", name: "Obanla" },
+  { id: "obakekere", name: "Obakekere" },
+  { id: "futa-library", name: "FUTA Library" },
+];
 
 /* ---------- formatting helpers ---------- */
 
