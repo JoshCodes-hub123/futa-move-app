@@ -24,7 +24,7 @@ import { GroupChat } from "@/features/group-chat";
 import { TripRiderCard } from "@/features/trip-rider-card";
 import { AvailableRiders } from "@/features/available-riders";
 import { pingDispatch } from "@/services/dispatch";
-import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
+import { getRideCapacity, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
 const rideRequestsKey = ["ride-requests"] as const;
 
@@ -361,13 +361,13 @@ function MatchingPanel({ requestId, partySize }: { requestId: string; partySize:
         We're looking for verified FUTA passengers with the same pickup, destination and time.
       </p>
       <div className="mx-auto mt-6 max-w-xs">
-        <SeatMeter filled={partySize} capacity={KEKE_CAPACITY} />
+        {capacity.data != null && <SeatMeter filled={partySize} capacity={capacity.data} />}
         <p className="mt-2 text-center text-xs text-muted-foreground">
           {match.isError
             ? "We couldn't check for matches just now. Retrying…"
             : found > 0
-              ? `${found} compatible ${found === 1 ? "student" : "students"} found — checking seats…`
-              : `Your party: ${partySize} of ${KEKE_CAPACITY} seats · still searching`}
+              ? `${found} compatible ${found === 1 ? "passenger" : "passengers"} found — checking seats…`
+              : capacity.data != null ? `Your party: ${partySize} of ${capacity.data} seats · still searching` : "Still searching"}
         </p>
       </div>
     </>
