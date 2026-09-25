@@ -633,13 +633,16 @@ export type Database = {
       }
       student_profiles: {
         Row: {
+          account_type: string
           avatar_path: string | null
           created_at: string
           current_submission_id: string | null
+          department: string | null
           faculty: string | null
           full_name: string | null
           id: string
           matric_number: string | null
+          phone: string | null
           rejection_reason: string | null
           submitted_at: string | null
           updated_at: string
@@ -647,13 +650,16 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          account_type?: string
           avatar_path?: string | null
           created_at?: string
           current_submission_id?: string | null
+          department?: string | null
           faculty?: string | null
           full_name?: string | null
           id: string
           matric_number?: string | null
+          phone?: string | null
           rejection_reason?: string | null
           submitted_at?: string | null
           updated_at?: string
@@ -661,13 +667,16 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          account_type?: string
           avatar_path?: string | null
           created_at?: string
           current_submission_id?: string | null
+          department?: string | null
           faculty?: string | null
           full_name?: string | null
           id?: string
           matric_number?: string | null
+          phone?: string | null
           rejection_reason?: string | null
           submitted_at?: string | null
           updated_at?: string
@@ -910,13 +919,17 @@ export type Database = {
       }
       verification_submissions: {
         Row: {
+          academic_title: string | null
+          account_type: string
           avatar_path: string
           created_at: string
+          department: string | null
           faculty: string
           full_name: string
           id: string
           id_card_path: string
           matric_number: string
+          phone: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -924,13 +937,17 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          academic_title?: string | null
+          account_type?: string
           avatar_path: string
           created_at?: string
+          department?: string | null
           faculty: string
           full_name: string
           id?: string
           id_card_path: string
           matric_number: string
+          phone?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -938,13 +955,17 @@ export type Database = {
           student_id: string
         }
         Update: {
+          academic_title?: string | null
+          account_type?: string
           avatar_path?: string
           created_at?: string
+          department?: string | null
           faculty?: string
           full_name?: string
           id?: string
           id_card_path?: string
           matric_number?: string
+          phone?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1049,6 +1070,7 @@ export type Database = {
         Returns: string
       }
       can_view_rider_photo: { Args: { _path: string }; Returns: boolean }
+      claim_lecturer_role: { Args: never; Returns: string }
       claim_student_role: { Args: never; Returns: string }
       confirm_meeting_point: {
         Args: { p_group_id: string; p_version?: number }
@@ -1261,6 +1283,19 @@ export type Database = {
         Returns: undefined
       }
       student_in_active_group: { Args: { _uid: string }; Returns: boolean }
+      submit_lecturer_verification: {
+        Args: {
+          p_academic_title: string
+          p_avatar_path: string
+          p_department: string
+          p_faculty: string
+          p_full_name: string
+          p_id_card_path: string
+          p_phone: string
+          p_staff_id: string
+        }
+        Returns: string
+      }
       submit_location_suggestion: {
         Args: {
           p_category: Database["public"]["Enums"]["location_category"]
