@@ -26,7 +26,7 @@ export function GroupChat({ groupId }: { groupId: string }) {
         <MessageCircle className="size-4 text-brand" />
         <p className="section-label">Group chat</p>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Only students in this ride can see this. It closes when the ride ends.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Only passengers in this ride can see this. It closes when the ride ends.</p>
       <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">
         {msgs.isLoading ? <p className="text-xs text-muted-foreground">Loading…</p> : list.length === 0 ? (
           <p className="text-xs text-muted-foreground">No messages yet. Say hi and agree where to meet.</p>
