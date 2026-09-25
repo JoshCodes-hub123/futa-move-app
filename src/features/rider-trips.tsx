@@ -17,7 +17,7 @@ import {
 const RIDER_LABEL: Record<TripStatus, string> = {
   confirmed: "Available", assigned: "Assigned to you", accepted: "Accepted", arriving: "Heading to pickup",
   picked_up: "Arrived · passengers on board", in_progress: "Trip started", completed: "Completed",
-  cancelled_by_student: "Cancelled", cancelled_by_rider: "Cancelled", cancelled_by_admin: "Cancelled", expired: "Expired", no_show: "No-show",
+  cancelled_by_student: "Cancelled by passenger", cancelled_by_rider: "Cancelled by rider", cancelled_by_admin: "Cancelled by admin", expired: "Expired", no_show: "No-show",
 };
 
 function Route({ from, to, when, pax, note }: { from: string; to: string; when: string; pax: number; note?: string | null }) {
