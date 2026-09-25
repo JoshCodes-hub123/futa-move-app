@@ -179,6 +179,7 @@
     font-family: var(--font-sans);
     letter-spacing: 0;
     text-rendering: optimizeLegibility;
+    min-width: 320px;
   }
 
   button, a, input { -webkit-tap-highlight-color: transparent; }

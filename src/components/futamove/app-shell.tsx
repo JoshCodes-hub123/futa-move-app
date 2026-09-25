@@ -24,7 +24,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border bg-background px-5 py-7 lg:flex lg:flex-col">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border bg-background px-5 py-6 lg:flex lg:flex-col">
         <Brand compact />
         <nav className="mt-10 space-y-1">
           {nav[role].map(({ label, to, icon: Icon }) => {
@@ -48,12 +48,12 @@ export function AppShell({ role, children }: { role: Role; children: React.React
         <p className="mt-auto text-xs leading-5 text-muted-foreground">Built for verified FUTA users.</p>
       </aside>
 
-      <main className="mx-auto min-h-screen w-full max-w-app bg-background px-5 pb-28 pt-6 sm:px-8 sm:pt-9 lg:ml-64 lg:max-w-3xl lg:px-12 lg:pb-16 lg:pt-12">
-        {children}
+      <main className="min-h-screen w-full px-4 pb-28 pt-5 sm:px-8 sm:pt-8 lg:ml-64 lg:w-[calc(100%-16rem)] lg:px-10 lg:pb-16 lg:pt-10 xl:px-14">
+        <div className="mx-auto w-full max-w-3xl">{children}</div>
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-safe shadow-[0_-8px_30px_-24px_var(--foreground)] backdrop-blur-xl lg:hidden">
-        <div className={cn("mx-auto grid h-[4.5rem] max-w-app items-center px-2 sm:px-6", nav[role].length === 5 ? "grid-cols-5" : "grid-cols-3")}>
+        <div className={cn("mx-auto grid h-[4.5rem] max-w-app items-center px-1 sm:px-6", nav[role].length === 5 ? "grid-cols-5" : "grid-cols-4")}>
           {nav[role].map(({ label, to, icon: Icon }) => {
             const active = pathname === to;
             return (
@@ -63,13 +63,13 @@ export function AppShell({ role, children }: { role: Role; children: React.React
                 aria-label={label}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex h-full min-w-0 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors duration-150",
+                  "relative flex h-full min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-medium transition-colors duration-150 min-[390px]:text-[11px]",
                   active ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 {active && <span className="absolute top-0 h-[3px] w-9 rounded-b-full bg-brand" />}
                 <Icon className="size-[20px]" strokeWidth={active ? 2.25 : 1.75} />
-                <span className="truncate">{label}</span>
+                <span className="max-w-full truncate">{label}</span>
               </Link>
             );
           })}
