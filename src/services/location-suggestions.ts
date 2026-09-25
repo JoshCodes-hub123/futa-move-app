@@ -1,3 +1,4 @@
+import { imageExtension } from "@/lib/image-ext";
 import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables } from "@/integrations/supabase/types";
@@ -24,7 +25,7 @@ export async function submitSuggestion(input: SuggestionInput): Promise<void> {
   if (!auth.user) throw new Error("You need to be signed in.");
   let imagePath: string | null = null;
   if (input.photo) {
-    const ext = (input.photo.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const ext = imageExtension(input.photo);
     imagePath = `${auth.user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
     const { error } = await supabase.storage.from("location-suggestion-images").upload(imagePath, input.photo, { contentType: input.photo.type, upsert: false });
     if (error) throw new Error(`Photo upload failed. ${friendlyMessage(friendlyMessage(error.message))}`);

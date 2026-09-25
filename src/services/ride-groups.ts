@@ -1,8 +1,12 @@
 import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 
-/** Mirrors public.ride_capacity() — the database is the authority. */
-export const KEKE_CAPACITY = 4;
+/** Seat capacity comes from public.ride_capacity() — the database is the authority. */
+export async function getRideCapacity(): Promise<number> {
+  const { data, error } = await supabase.rpc("ride_capacity");
+  if (error || typeof data !== "number") throw new Error("We couldn't load seat capacity.");
+  return data;
+}
 
 export interface MatchResult {
   group_id: string | null;

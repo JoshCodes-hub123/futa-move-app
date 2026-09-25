@@ -1,3 +1,4 @@
+import { imageExtension } from "@/lib/image-ext";
 import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, Enums } from "@/integrations/supabase/types";
@@ -51,7 +52,7 @@ export async function setLocationActive(id: string, active: boolean): Promise<vo
 export async function uploadLocationImage(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
   if (file.size > 5 * 1024 * 1024) throw new Error("Images must be 5 MB or smaller.");
-  const path = `${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+  const path = `${crypto.randomUUID()}.${imageExtension(file)}`;
   const { error } = await supabase.storage.from("location-images").upload(path, file, { contentType: file.type });
   if (error) throw new Error(friendlyMessage(error.message));
   return path;

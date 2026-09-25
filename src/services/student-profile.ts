@@ -1,3 +1,4 @@
+import { imageExtension } from "@/lib/image-ext";
 import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -40,7 +41,7 @@ export function validateImage(file: File | null, kind: "avatar" | "idCard", idLa
 }
 
 async function upload(bucket: "profile-photos" | "student-id-cards", userId: string, file: File) {
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const ext = imageExtension(file);
   const path = `${userId}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw new Error(`Upload failed. ${friendlyMessage(friendlyMessage(error.message))}`);
