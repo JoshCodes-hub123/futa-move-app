@@ -92,6 +92,27 @@
       "when": 1790297540380,
       "tag": "0012_ride_completion_confirmation",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790314424381,
+      "tag": "0013_app_role_lecturer",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790314471539,
+      "tag": "0014_lecturer_verification",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790314499943,
+      "tag": "0015_lecturer_claim_from_fresh_student",
+      "breakpoints": true
     }
   ]
 }

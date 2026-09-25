@@ -8,7 +8,7 @@ export type VerificationStatus = StudentProfile["verification_status"];
 export const VERIFICATION_LABEL: Record<VerificationStatus | "none", string> = {
   none: "Verification not submitted",
   pending: "Pending Verification",
-  verified: "Verified Student",
+  verified: "Verified FUTA account",
   rejected: "Verification requires resubmission",
 };
 
@@ -30,8 +30,8 @@ export async function signedImageUrl(bucket: "profile-photos" | "student-id-card
   return data.signedUrl;
 }
 
-export function validateImage(file: File | null, kind: "avatar" | "idCard"): string | null {
-  const label = kind === "avatar" ? "profile photo" : "FUTA student ID card image";
+export function validateImage(file: File | null, kind: "avatar" | "idCard", idLabel = "FUTA student ID card image"): string | null {
+  const label = kind === "avatar" ? "profile photo" : idLabel;
   if (!file) return `Add your ${label}.`;
   if (!file.type.startsWith("image/")) return `Your ${label} must be an image (JPG, PNG or WEBP).`;
   if (file.size > MAX_IMAGE_BYTES[kind]) return `Your ${label} must be under ${MAX_IMAGE_BYTES[kind] / 1024 / 1024}MB.`;
@@ -65,6 +65,19 @@ export async function submitVerification(input: { fullName: string; matricNumber
   if (error) throw new Error(`We couldn't submit your details. ${error.message}`);
 }
 
+/** Lecturer verification: same private buckets and review flow as students. */
+export async function submitLecturerVerification(input: { fullName: string; staffId: string; faculty: string; department: string; phone: string; academicTitle: string; avatar: File; idCard: File }): Promise<void> {
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw new Error("You need to be signed in to submit verification.");
+  const avatarPath = await upload("profile-photos", auth.user.id, input.avatar);
+  const idCardPath = await upload("student-id-cards", auth.user.id, input.idCard);
+  const { error } = await supabase.rpc("submit_lecturer_verification", {
+    p_full_name: input.fullName, p_staff_id: input.staffId, p_faculty: input.faculty, p_department: input.department,
+    p_phone: input.phone, p_academic_title: input.academicTitle, p_avatar_path: avatarPath, p_id_card_path: idCardPath,
+  });
+  if (error) throw new Error(`We couldn't submit your details. ${error.message}`);
+}
+
 // ===== Admin =====
 export async function amIAdmin(): Promise<boolean> {
   const { data: auth } = await supabase.auth.getUser();
@@ -74,8 +87,10 @@ export async function amIAdmin(): Promise<boolean> {
   return data === true;
 }
 
-export async function listPendingSubmissions(): Promise<VerificationSubmission[]> {
-  const { data, error } = await supabase.from("verification_submissions").select("*").eq("status", "pending").order("created_at");
+export async function listPendingSubmissions(accountType?: "student" | "lecturer", status: VerificationStatus = "pending"): Promise<VerificationSubmission[]> {
+  let q = supabase.from("verification_submissions").select("*").eq("status", status);
+  if (accountType) q = q.eq("account_type", accountType);
+  const { data, error } = await q.order("created_at", { ascending: status === "pending" }).limit(200);
   if (error) throw new Error(error.message);
   return data;
 }
