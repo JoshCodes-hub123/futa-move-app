@@ -144,6 +144,34 @@ export async function adminCancelTrip(tripId: string, outcome: "cancelled_by_adm
   const { error } = await supabase.rpc("admin_cancel_trip", { p_trip_id: tripId, p_outcome: outcome, p_reason: reason });
   fail(error);
 }
+/* ---------- Phase 4: no-shows and stuck rides (all rules enforced in the database) ---------- */
+export async function riderReportPassengerNoShow(tripId: string, reason: string) {
+  const { error } = await supabase.rpc("rider_report_passenger_no_show", { p_trip_id: tripId, p_reason: reason });
+  fail(error);
+}
+export async function passengerReportRiderLate(tripId: string, reason: string) {
+  const { error } = await supabase.rpc("passenger_report_rider_late", { p_trip_id: tripId, p_reason: reason });
+  fail(error);
+}
+export async function adminCompleteTrip(tripId: string, reason: string) {
+  const { error } = await supabase.rpc("admin_complete_trip", { p_trip_id: tripId, p_reason: reason });
+  fail(error);
+}
+export type TripIssue = "rider_late_reported" | "assignment_unanswered" | "rider_late" | "start_not_confirmed" | "completion_not_confirmed";
+export const TRIP_ISSUE_LABEL: Record<TripIssue, string> = {
+  rider_late_reported: "Passenger reported the rider hasn't arrived",
+  assignment_unanswered: "Rider hasn't answered the assignment for 10+ min",
+  rider_late: "Rider not at pickup 15+ min after departure time",
+  start_not_confirmed: "Rider arrived 15+ min ago — no passenger has confirmed pickup",
+  completion_not_confirmed: "At destination 15+ min — no passenger has confirmed completion",
+};
+export async function adminTripIssues(): Promise<Record<string, TripIssue[]>> {
+  const { data, error } = await supabase.rpc("admin_trip_issues");
+  fail(error);
+  const out: Record<string, TripIssue[]> = {};
+  for (const r of data ?? []) (out[r.trip_id] ??= []).push(r.issue as TripIssue);
+  return out;
+}
 export async function getTripHistory(tripId: string): Promise<TripHistory[]> {
   const { data, error } = await supabase.from("trip_status_history").select("*").eq("trip_id", tripId).order("created_at");
   fail(error);

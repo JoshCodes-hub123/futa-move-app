@@ -43,9 +43,9 @@ function StatusPill({ status, trip }: { status: RideRequest["status"]; trip?: Tr
   );
 }
 
-/** Pickup onward, or once the ride has ended, cancelling is no longer allowed (the database enforces this too). */
+/** Once the rider is on the way, or the ride has ended, cancelling is no longer allowed (matches the database rule). */
 function tripBlocksCancel(t?: TripStatus) {
-  return !!t && (t === "picked_up" || t === "in_progress" || isTerminal(t));
+  return !!t && (t === "arriving" || t === "picked_up" || t === "in_progress" || isTerminal(t));
 }
 
 function RequestRow({ request, trip, dispatchState }: { request: RideRequest; trip?: TripStatus | undefined; dispatchState?: string | undefined }) {
@@ -627,7 +627,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
         <RouteSummary origin={t.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
       </div>
       {g.meeting_point_note && <p className="mt-3 text-xs text-muted-foreground">Meeting point note: {g.meeting_point_note}</p>}
-      {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} />}
+      {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} departure={g.departure_time} />}
       {t.status === "confirmed" && !t.rider && <AvailableRiders tripId={t.id} />}
       {!cancelled && (
         <ol className="mt-8 space-y-3">

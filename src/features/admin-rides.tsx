@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AdminFrame } from "@/features/admin-console";
 import {
-  ADMIN_TRIP_LABEL, adminAssignRider, adminCancelTrip, adminListEligibleRiders, adminListTrips, adminRiderNames, fmtTime, getTripHistory,
+  ADMIN_TRIP_LABEL, TRIP_ISSUE_LABEL, adminAssignRider, adminCompleteTrip, adminTripIssues, adminCancelTrip, adminListEligibleRiders, adminListTrips, adminRiderNames, fmtTime, getTripHistory,
   isCancelled, isTerminal, type Trip, type TripStatus,
 } from "@/services/trips";
 import {
@@ -116,9 +116,12 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
     onSuccess: async () => { setReason(""); await after(); },
   });
   const redispatch = useMutation({ mutationFn: () => adminRedispatch(t.id), onSuccess: after });
+  const issuesQ = useQuery({ queryKey: ["admin-trip-issues"], queryFn: adminTripIssues, refetchInterval: 15000 });
+  const issues = issuesQ.data?.[t.id] ?? [];
+  const complete = useMutation({ mutationFn: () => adminCompleteTrip(t.id, reason), onSuccess: async () => { setReason(""); await issuesQ.refetch(); await after(); } });
   const canAssign = s === "confirmed" || s === "assigned" || s === "accepted";
   const riderOnTrip = !!t.rider_id && (s === "assigned" || s === "accepted" || s === "arriving");
-  const err = assign.error ?? cancel.error ?? redispatch.error;
+  const err = assign.error ?? cancel.error ?? redispatch.error ?? complete.error;
   const chosen = riders.data?.find((r) => r.user_id === rider);
   const ds = t.dispatch_state as DispatchState;
   const why = whyWaiting(t, dispatch, parts);
@@ -149,6 +152,12 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
         Confirmed {fmtTime(t.confirmed_at)} · Assigned {fmtTime(t.assigned_at)} · Accepted {fmtTime(t.accepted_at)} · Arriving {fmtTime(t.arriving_at)} · Picked up {fmtTime(t.picked_up_at)} · Started {fmtTime(t.started_at)} · Completed {fmtTime(t.completed_at)}
         {t.cancelled_at && ` · Cancelled ${fmtTime(t.cancelled_at)} (${t.cancel_reason ?? "no reason"}, was ${t.cancelled_from_status})`}
       </p>
+      {issues.length > 0 && (
+        <div className="mt-2 rounded-md border border-destructive/60 p-2 text-xs">
+          <p className="font-semibold text-destructive">Needs admin action</p>
+          {issues.map((i) => <p key={i}>• {TRIP_ISSUE_LABEL[i]}</p>)}
+        </div>
+      )}
       <Button variant="ghost" size="sm" className="mt-2 px-0" onClick={() => setOpen(!open)}>{open ? "Hide details" : "Manage, dispatch & history"}</Button>
       {open && (
         <div className="mt-3 space-y-4 border-t border-border pt-4">
@@ -187,6 +196,9 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
               <Input className="max-w-xs" placeholder="Reason (required)" value={reason} onChange={(e) => setReason(e.target.value)} />
               <Button size="sm" variant="secondary" disabled={!reason.trim() || cancel.isPending} onClick={() => cancel.mutate()}>Apply</Button>
             </div>
+          )}
+          {s === "in_progress" && parts?.rider_at_destination && (
+            <Button size="sm" variant="secondary" disabled={!reason.trim() || complete.isPending} onClick={() => complete.mutate()}>Mark ride completed (uses the reason above)</Button>
           )}
           {err && <p className="text-destructive">{err.message}</p>}
           <DispatchDetail tripId={t.id} />

@@ -988,6 +988,10 @@ export type Database = {
         Args: { p_outcome: string; p_reason: string; p_trip_id: string }
         Returns: undefined
       }
+      admin_complete_trip: {
+        Args: { p_reason: string; p_trip_id: string }
+        Returns: undefined
+      }
       admin_dispatch_overview: {
         Args: never
         Returns: {
@@ -1043,6 +1047,14 @@ export type Database = {
       }
       admin_redispatch: { Args: { p_trip_id: string }; Returns: undefined }
       admin_trip_dispatch: { Args: { p_trip_id: string }; Returns: Json }
+      admin_trip_issues: {
+        Args: never
+        Returns: {
+          issue: string
+          since: string
+          trip_id: string
+        }[]
+      }
       admin_trip_participants: {
         Args: never
         Returns: {
@@ -1173,6 +1185,10 @@ export type Database = {
         Returns: Json
       }
       passenger_confirm_pickup: { Args: { p_trip_id: string }; Returns: Json }
+      passenger_report_rider_late: {
+        Args: { p_reason?: string; p_trip_id: string }
+        Returns: undefined
+      }
       pick_compatible_requests: {
         Args: {
           _exclude: string[]
@@ -1265,6 +1281,10 @@ export type Database = {
           passenger_count: number
           trip_id: string
         }[]
+      }
+      rider_report_passenger_no_show: {
+        Args: { p_reason?: string; p_trip_id: string }
+        Returns: undefined
       }
       rider_respond_assignment: {
         Args: { p_accept: boolean; p_reason?: string; p_trip_id: string }

@@ -31,7 +31,7 @@ export function StudentCurrentRide() {
         <p className="flex min-w-0 items-center gap-2 text-sm font-semibold"><MapPin className="size-4 shrink-0 text-brand" /><span className="truncate">{trip.meeting_point_text} → {trip.destination_text}</span></p>
         <Badge variant="warning" className="shrink-0 rounded-full">{studentTripLabel(trip.status as TripStatus, trip.dispatch_state, trip.confirmed_at)}</Badge>
       </div>
-      {trip.rider_id && <TripRiderCard tripId={trip.id} status={trip.status} />}
+      {trip.rider_id && <TripRiderCard tripId={trip.id} status={trip.status} departure={trip.departure_time} />}
       {requestId && <Link to="/student/rides/$id" params={{ id: requestId }} className="mt-3 inline-block text-sm font-semibold underline">Open ride details</Link>}
     </div>
   );

@@ -10,7 +10,7 @@ import { formatDepartureTime } from "@/services/ride-requests";
 import { riderConfirmedStart } from "@/services/ratings";
 import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, shareMyLocation, type Availability, type RideOffer } from "@/services/dispatch";
 import {
-  ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, withdrawTrip,
+  ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, riderReportPassengerNoShow, withdrawTrip,
   type Trip, type TripStatus,
 } from "@/services/trips";
 
@@ -85,8 +85,26 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
         ) : (
           <Button variant="ghost" onClick={() => setWithdrawing(true)}>I can't make this ride</Button>
         ))}
+        {s === "picked_up" && <PassengerNoShow trip={trip} onDone={onDone} />}
       </div>
     </section>
+  );
+}
+
+/** Rider reports passengers didn't show. Only possible after 5 min at the meeting point with no passenger confirmation (database-enforced). */
+function PassengerNoShow({ trip, onDone }: { trip: Trip; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const m = useMutation({ mutationFn: () => riderReportPassengerNoShow(trip.id, reason), onSuccess: onDone, onError: onDone });
+  const waitedMin = trip.arrived_at ? Math.floor((Date.now() - new Date(trip.arrived_at).getTime()) / 60000) : 0;
+  if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>Passengers didn't show up</Button>;
+  return (
+    <div className="grid gap-2">
+      <p className="text-xs text-muted-foreground">{waitedMin < 5 ? `Please wait at least 5 minutes at the meeting point (${waitedMin} min so far).` : "This ends the ride as a passenger no-show. It can't be undone."}</p>
+      <Input placeholder="What happened? (optional)" value={reason} onChange={(e) => setReason(e.target.value)} />
+      <Button variant="secondary" disabled={m.isPending || waitedMin < 5} onClick={() => m.mutate()}>{m.isPending && <Loader2 className="animate-spin" />} Report no-show</Button>
+      {m.error && <p className="text-sm text-destructive">{m.error.message}</p>}
+    </div>
   );
 }
 

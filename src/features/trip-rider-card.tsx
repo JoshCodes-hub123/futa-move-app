@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { passengerReportRiderLate } from "@/services/trips";
 import { IMPROVE_TAGS, POSITIVE_TAGS, confirmCompletion, confirmPickup, getTripRiderProfile, rateRider, ratingText } from "@/services/ratings";
 
 /** Rider card, pickup confirmation and post-ride rating for a passenger. All rules are enforced by the database. */
-export function TripRiderCard({ tripId, status }: { tripId: string; status: string }) {
+export function TripRiderCard({ tripId, status, departure }: { tripId: string; status: string; departure?: string | null | undefined }) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["trip-rider", tripId, status], queryFn: () => getTripRiderProfile(tripId), refetchInterval: 10000 });
   const refresh = async () => { await qc.invalidateQueries({ queryKey: ["trip-rider", tripId] }); await qc.invalidateQueries({ queryKey: ["ride-group"] }); await qc.invalidateQueries({ queryKey: ["my-group-trips"] }); };
@@ -98,6 +99,22 @@ export function TripRiderCard({ tripId, status }: { tripId: string; status: stri
           )}
         </div>
       )}
+      {(status === "assigned" || status === "accepted" || status === "arriving") && <RiderLateReport tripId={tripId} departure={departure} />}
     </section>
+  );
+}
+
+/** Passenger flags that the rider hasn't come. Recorded for FUTAMOVE support; it never cancels the ride by itself. */
+function RiderLateReport({ tripId, departure }: { tripId: string; departure?: string | null | undefined }) {
+  const [done, setDone] = useState(false);
+  const m = useMutation({ mutationFn: () => passengerReportRiderLate(tripId, ""), onSuccess: () => setDone(true) });
+  if (!departure || Date.now() < new Date(departure).getTime() + 10 * 60000) return null;
+  return (
+    <div className="mt-4 border-t border-border pt-4">
+      {done ? <p className="text-sm text-muted-foreground">Thanks. FUTAMOVE support has been told your rider hasn't arrived.</p> : (
+        <Button variant="secondary" className="w-full" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending && <Loader2 className="animate-spin" />} My rider hasn't arrived</Button>
+      )}
+      {m.error && <p className="mt-2 text-sm text-destructive">{m.error.message}</p>}
+    </div>
   );
 }
