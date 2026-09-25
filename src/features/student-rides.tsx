@@ -15,6 +15,7 @@ import {
   cancelRideRequest,
   formatDepartureTime,
   getRideRequest,
+  startPrivateRide,
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
@@ -212,12 +213,7 @@ export function RideRequestDetailPage({ id }: { id: string }) {
             ) : isSearching && isShared ? (
               <MatchingPanel requestId={id} partySize={data.party_size} />
             ) : isSearching ? (
-              <>
-                <h1 className="display-title text-[2rem]">Private keke request saved</h1>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This request is just for your party, so there's no student matching. Rider search arrives in a later phase.
-                </p>
-              </>
+              <PrivateStartPanel requestId={id} />
             ) : (
               <>
                 <h1 className="display-title text-[2rem]">Request cancelled</h1>
@@ -245,7 +241,7 @@ export function RideRequestDetailPage({ id }: { id: string }) {
               </>
             )}
 
-            {chatOpen && data.group_id && <GroupChat groupId={data.group_id} />}
+            {chatOpen && isShared && data.group_id && <GroupChat groupId={data.group_id} />}
 
             {cancel.isError && (
               <p className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">
@@ -279,6 +275,40 @@ export function RideRequestDetailPage({ id }: { id: string }) {
         )}
       </div>
     </AppShell>
+  );
+}
+
+const PRIVATE_BLOCKED: Record<string, string> = {
+  not_verified: "Your FUTA verification must be approved before FUTAMOVE can look for a rider.",
+  departure_passed: "The departure time for this request has passed. Cancel it and create a new one.",
+  pickup_unavailable: "Your pickup location is no longer available. Cancel this request and choose another.",
+  already_in_ride: "You're already in another active ride. Finish or cancel it first.",
+};
+
+/** Private Keke: hands the request to the normal rider search (one booking, never matched with others). */
+function PrivateStartPanel({ requestId }: { requestId: string }) {
+  const queryClient = useQueryClient();
+  const start = useQuery({
+    queryKey: ["private-start", requestId],
+    queryFn: () => startPrivateRide(requestId),
+    refetchInterval: (query) => (query.state.data?.started ? false : 15000),
+  });
+  useEffect(() => {
+    if (start.data?.started) {
+      void queryClient.invalidateQueries({ queryKey: rideRequestsKey });
+      void queryClient.invalidateQueries({ queryKey: ["my-group-trips"] });
+    }
+  }, [start.data?.started, queryClient]);
+  const reason = start.data && !start.data.started ? PRIVATE_BLOCKED[start.data.reason ?? ""] : null;
+  return (
+    <>
+      <h1 className="display-title text-[2rem]">Private keke</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        {start.isError
+          ? start.error.message
+          : reason ?? "This ride is just for your party. FUTAMOVE is starting the rider search…"}
+      </p>
+    </>
   );
 }
 
@@ -605,7 +635,9 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
               ? "We haven't found a rider yet, so the FUTAMOVE team is arranging one for your group. Stay close to the meeting point."
               : t.status === "assigned"
                 ? "A rider has been assigned and is confirming the ride."
-                : "Everyone confirmed. FUTAMOVE is finding a keke rider for your group."
+                : g.members.length === 1
+                  ? "Private keke. FUTAMOVE is finding a keke rider for your party."
+                  : "Everyone confirmed. FUTAMOVE is finding a keke rider for your group."
             : t.status === "accepted"
               ? "A rider has accepted your ride. Be at the meeting point on time."
               : t.status === "arriving"
