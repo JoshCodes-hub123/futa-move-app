@@ -85,6 +85,7 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
         ) : (
           <Button variant="ghost" onClick={() => setWithdrawing(true)}>I can't make this ride</Button>
         ))}
+        {s === "picked_up" && <PassengerNoShow trip={trip} onDone={onDone} />}
       </div>
     </section>
   );
