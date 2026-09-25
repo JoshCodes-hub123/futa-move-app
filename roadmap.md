@@ -18,5 +18,6 @@
 - [ ] Phase 2B signed-in browser walkthrough (student A/B, rider, admin) — not yet performed
 
 - [x] Stage 1: mutual ride start, rider profiles, ratings
-- [ ] Stage 2: lecturer registration (waiting for go-ahead)
+- [x] Stage 2: lecturer registration, verification, mixed rides
+- [ ] Stage 2 real-account browser test (waiting on user)
 - [ ] Stage 3: student "see available riders" fallback (waiting for go-ahead)
