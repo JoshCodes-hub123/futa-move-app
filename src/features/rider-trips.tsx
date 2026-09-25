@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatDepartureTime } from "@/services/ride-requests";
+import { riderConfirmedStart } from "@/services/ratings";
 import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, shareMyLocation, type Availability, type RideOffer } from "@/services/dispatch";
 import {
   ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, withdrawTrip,
