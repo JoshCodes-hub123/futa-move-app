@@ -1043,6 +1043,19 @@ export type Database = {
       }
       admin_redispatch: { Args: { p_trip_id: string }; Returns: undefined }
       admin_trip_dispatch: { Args: { p_trip_id: string }; Returns: Json }
+      admin_trip_participants: {
+        Args: never
+        Returns: {
+          assignment_method: string
+          lecturers: number
+          passenger_pickup_confirms: number
+          rider_at_destination: boolean
+          rider_availability: string
+          rider_start_confirmed: boolean
+          students: number
+          trip_id: string
+        }[]
+      }
       admin_update_dispatch_settings: {
         Args: {
           p_escalate_after_seconds: number
@@ -1278,11 +1291,16 @@ export type Database = {
         Args: { p_accuracy: number; p_lat: number; p_lng: number }
         Returns: undefined
       }
+      student_available_riders: { Args: { p_trip_id: string }; Returns: Json }
       student_dispatch_ping: {
         Args: { p_group_id: string }
         Returns: undefined
       }
       student_in_active_group: { Args: { _uid: string }; Returns: boolean }
+      student_request_rider: {
+        Args: { p_rider_id: string; p_trip_id: string }
+        Returns: undefined
+      }
       submit_lecturer_verification: {
         Args: {
           p_academic_title: string

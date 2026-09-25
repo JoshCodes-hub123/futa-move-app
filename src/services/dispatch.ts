@@ -106,10 +106,40 @@ export const EVENT_LABEL: Record<string, string> = {
   CANDIDATE_SELECTED: "Candidate selected", OFFER_CREATED: "Offer sent", OFFER_ACCEPTED: "Offer accepted", OFFER_DECLINED: "Offer declined",
   OFFER_TIMED_OUT: "Offer timed out", OFFER_CANCELLED: "Offer cancelled", RIDER_ASSIGNED: "Rider assigned", RIDER_REASSIGNED: "Rider reassigned",
   RIDER_SELF_ACCEPTED: "Rider accepted from waiting list", RIDER_WITHDREW: "Rider withdrew", RIDER_NO_SHOW: "Rider no-show",
-  ASSIGNMENT_ACCEPTED: "Assignment accepted", ASSIGNMENT_DECLINED: "Assignment declined", DISPATCH_ESCALATED: "Escalated to admin", DISPATCH_RESTARTED: "Dispatch restarted",
+  STUDENT_SELECTED_RIDER: "Passenger chose this rider", ASSIGNMENT_ACCEPTED: "Assignment accepted", ASSIGNMENT_DECLINED: "Assignment declined", DISPATCH_ESCALATED: "Escalated to admin", DISPATCH_RESTARTED: "Dispatch restarted",
 };
 export function fmtWait(sec: number) {
   if (sec < 60) return `${sec}s`;
   if (sec < 3600) return `${Math.floor(sec / 60)} min`;
   return `${Math.floor(sec / 3600)} h ${Math.floor((sec % 3600) / 60)} min`;
+}
+
+/* ---------- Phase 3: passenger-visible available riders ---------- */
+export interface AvailableRider {
+  rider_id: string; first_name: string; avatar_path: string | null; vehicle: string | null; plate: string | null;
+  completed_rides: number; rating_avg: number | null; rating_count: number; distance_km: number | null;
+}
+export async function listAvailableRiders(tripId: string): Promise<{ available: boolean; reason: string | null; riders: AvailableRider[] }> {
+  const { data, error } = await supabase.rpc("student_available_riders", { p_trip_id: tripId });
+  fail(error);
+  const v = data as unknown as { available: boolean; reason: string | null; riders: AvailableRider[] };
+  await Promise.all(v.riders.map(async (r) => {
+    if (!r.avatar_path) return;
+    const { data: s } = await supabase.storage.from("rider-documents").createSignedUrl(r.avatar_path, 300);
+    r.avatar_path = s?.signedUrl ?? null;
+  }));
+  return v;
+}
+export async function requestRider(tripId: string, riderId: string) {
+  const { error } = await supabase.rpc("student_request_rider", { p_trip_id: tripId, p_rider_id: riderId });
+  fail(error);
+}
+export interface TripParticipants {
+  trip_id: string; students: number; lecturers: number; passenger_pickup_confirms: number; rider_start_confirmed: boolean;
+  rider_at_destination: boolean; rider_availability: string | null; assignment_method: string | null;
+}
+export async function adminTripParticipants(): Promise<Record<string, TripParticipants>> {
+  const { data, error } = await supabase.rpc("admin_trip_participants");
+  fail(error);
+  return Object.fromEntries(((data ?? []) as TripParticipants[]).map((r) => [r.trip_id, r]));
 }

@@ -8,8 +8,8 @@ import {
   isCancelled, isTerminal, type Trip, type TripStatus,
 } from "@/services/trips";
 import {
-  DISPATCH_STATE_LABEL, EVENT_LABEL, adminDispatchOverview, adminMarkRiderNoShow, adminRedispatch, adminTripDispatch, fmtWait,
-  type DispatchOverviewRow, type DispatchState, type FairnessBreakdown,
+  DISPATCH_STATE_LABEL, EVENT_LABEL, adminDispatchOverview, adminMarkRiderNoShow, adminRedispatch, adminTripDispatch, adminTripParticipants, fmtWait,
+  type DispatchOverviewRow, type DispatchState, type FairnessBreakdown, type TripParticipants,
 } from "@/services/dispatch";
 
 const waitingForRider = (t: Trip) => t.status === "confirmed" && !t.rider_id;
@@ -84,7 +84,23 @@ function DispatchDetail({ tripId }: { tripId: string }) {
   );
 }
 
-function TripCard({ t, riderName, dispatch, onChanged }: { t: Trip; riderName?: string | undefined; dispatch?: DispatchOverviewRow | undefined; onChanged: () => Promise<void> }) {
+function whyWaiting(t: Trip, d?: DispatchOverviewRow, p?: TripParticipants): string | null {
+  if (isTerminal(t.status as TripStatus)) return null;
+  if (waitingForRider(t)) {
+    if (t.dispatch_state === "escalated") return "Escalated to admin";
+    if (d?.pending_rider_id) return "Rider offer pending";
+    if (d && d.offers_total > 0) return (d.candidate_count ?? 0) > 0 ? "Retrying with the next rider" : "Previous offers declined/expired — no free rider now";
+    return (d?.candidate_count ?? 0) > 0 ? "Waiting for rider assignment" : "Waiting — no eligible rider online";
+  }
+  if (t.status === "assigned") return "Assigned — waiting for rider to accept";
+  if (t.status === "accepted") return "Rider accepted";
+  if (t.status === "arriving") return "Rider arriving";
+  if (t.status === "picked_up") return p?.passenger_pickup_confirms ? "Starting" : "Rider arrived — passenger confirmation pending";
+  if (t.status === "in_progress") return p?.rider_at_destination ? "At destination — completion confirmation pending" : "In progress";
+  return null;
+}
+
+function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; riderName?: string | undefined; dispatch?: DispatchOverviewRow | undefined; parts?: TripParticipants | undefined; onChanged: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [rider, setRider] = useState("");
   const [override, setOverride] = useState(false);
@@ -105,6 +121,7 @@ function TripCard({ t, riderName, dispatch, onChanged }: { t: Trip; riderName?: 
   const err = assign.error ?? cancel.error ?? redispatch.error;
   const chosen = riders.data?.find((r) => r.user_id === rider);
   const ds = t.dispatch_state as DispatchState;
+  const why = whyWaiting(t, dispatch, parts);
 
   return (
     <div className={`surface-panel p-4 text-sm ${ds === "escalated" && waitingForRider(t) ? "border-destructive/60" : ""}`}>
@@ -112,13 +129,15 @@ function TripCard({ t, riderName, dispatch, onChanged }: { t: Trip; riderName?: 
         <div className="min-w-0">
           <p className="font-semibold">{t.meeting_point_text} → {t.destination_text}</p>
           <p className="text-xs text-muted-foreground">Departs {fmtTime(t.departure_time)} · {t.passenger_count} passengers in {t.member_count} bookings · Trip {t.id.slice(0, 8)}</p>
-          <p className="mt-1 text-xs">Rider: {riderName ?? (t.rider_id ? t.rider_id.slice(0, 8) : "None")}</p>
+          {parts && <p className="text-xs text-muted-foreground">{parts.students} student{parts.students === 1 ? "" : "s"} · {parts.lecturers} lecturer{parts.lecturers === 1 ? "" : "s"}</p>}
+          <p className="mt-1 text-xs">Rider: {riderName ?? (t.rider_id ? t.rider_id.slice(0, 8) : "None")}{parts?.rider_availability ? ` (${parts.rider_availability})` : ""}{parts?.assignment_method ? ` · via ${parts.assignment_method}` : ""}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">{ADMIN_TRIP_LABEL[s]}</span>
           {waitingForRider(t) && <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${ds === "escalated" ? "bg-destructive/15 text-destructive" : "bg-muted"}`}>{DISPATCH_STATE_LABEL[ds]}</span>}
         </div>
       </div>
+      {why && <p className="mt-2 text-xs font-semibold">Now: {why}</p>}
       {dispatch && waitingForRider(t) && (
         <p className="mt-2 text-xs">
           Waiting {fmtWait(dispatch.waiting_seconds)} · {dispatch.offers_total} riders offered ({dispatch.offers_declined} declined, {dispatch.offers_timed_out} timed out, {dispatch.offers_cancelled} cancelled)
@@ -191,10 +210,11 @@ export function AdminRidesPage() {
   const trips = useQuery({ queryKey: ["admin-trips"], queryFn: adminListTrips, refetchInterval: 15000 });
   const overview = useQuery({ queryKey: ["admin-dispatch-overview"], queryFn: adminDispatchOverview, refetchInterval: 15000 });
   const names = useQuery({ queryKey: ["admin-rider-names"], queryFn: adminRiderNames });
+  const parts = useQuery({ queryKey: ["admin-trip-participants"], queryFn: adminTripParticipants, refetchInterval: 15000 });
   const f = FILTERS.find((x) => x.key === filter)!;
   const rows = (trips.data ?? []).filter(f.match);
   const refresh = async () => {
-    await Promise.all(["admin-trips", "admin-dispatch-overview", "eligible-riders", "trip-dispatch"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+    await Promise.all(["admin-trips", "admin-dispatch-overview", "admin-trip-participants", "eligible-riders", "trip-dispatch"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
   };
   return (
     <AdminFrame title="Rides" intro="Confirmed student groups, automatic dispatch, rider assignment and trip history.">
@@ -208,7 +228,7 @@ export function AdminRidesPage() {
       </div>
       <div className="mt-6 space-y-3">
         {trips.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : trips.isError ? <p className="text-sm text-destructive">{trips.error.message}</p>
-          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} dispatch={overview.data?.[t.id]} onChanged={refresh} />)
+          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} dispatch={overview.data?.[t.id]} parts={parts.data?.[t.id]} onChanged={refresh} />)
           : <p className="text-sm text-muted-foreground">No rides here.</p>}
       </div>
     </AdminFrame>
