@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IMPROVE_TAGS, POSITIVE_TAGS, confirmPickup, getTripRiderProfile, rateRider, ratingText } from "@/services/ratings";
+import { IMPROVE_TAGS, POSITIVE_TAGS, confirmCompletion, confirmPickup, getTripRiderProfile, rateRider, ratingText } from "@/services/ratings";
 
 /** Rider card, pickup confirmation and post-ride rating for a passenger. All rules are enforced by the database. */
 export function TripRiderCard({ tripId, status }: { tripId: string; status: string }) {
@@ -10,14 +10,18 @@ export function TripRiderCard({ tripId, status }: { tripId: string; status: stri
   const q = useQuery({ queryKey: ["trip-rider", tripId, status], queryFn: () => getTripRiderProfile(tripId), refetchInterval: 10000 });
   const refresh = async () => { await qc.invalidateQueries({ queryKey: ["trip-rider", tripId] }); await qc.invalidateQueries({ queryKey: ["ride-group"] }); await qc.invalidateQueries({ queryKey: ["my-group-trips"] }); };
   const confirm = useMutation({ mutationFn: () => confirmPickup(tripId), onSuccess: refresh });
+  const complete = useMutation({ mutationFn: () => confirmCompletion(tripId), onSuccess: refresh });
   const [stars, setStars] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const rate = useMutation({ mutationFn: () => rateRider(tripId, stars, tags), onSuccess: refresh });
   const p = q.data;
   if (!p) return null;
-  const riderConfirmed = p.confirmations.some((c) => c.role === "rider");
-  const iConfirmed = p.confirmations.some((c) => c.is_me);
-  const passengerCount = p.confirmations.filter((c) => c.role === "passenger").length;
+  const pick = p.confirmations.filter((c) => c.type === "pickup_start");
+  const riderConfirmed = pick.some((c) => c.role === "rider");
+  const iConfirmed = pick.some((c) => c.is_me);
+  const passengerCount = pick.filter((c) => c.role === "passenger").length;
+  const riderAtDestination = p.confirmations.some((c) => c.type === "destination_arrival");
+  const iConfirmedCompletion = p.confirmations.some((c) => c.type === "completion" && c.is_me);
   const toggle = (t: string) => setTags((x) => (x.includes(t) ? x.filter((y) => y !== t) : [...x, t]));
 
   return (
@@ -32,7 +36,18 @@ export function TripRiderCard({ tripId, status }: { tripId: string; status: stri
         </div>
       </div>
 
-      {(status === "picked_up" || status === "in_progress") && (
+      {status === "in_progress" && riderAtDestination && (
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-sm font-semibold">You've reached your destination. Confirm ride completed.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Arrived — waiting for passenger confirmation. One passenger confirming is enough.</p>
+          {complete.error && <p className="mt-2 text-sm text-destructive">{complete.error.message}</p>}
+          <Button className="mt-3 w-full" onClick={() => complete.mutate()} disabled={complete.isPending}>
+            {complete.isPending && <Loader2 className="animate-spin" />} Confirm ride completed
+          </Button>
+        </div>
+      )}
+
+      {(status === "picked_up" || (status === "in_progress" && !riderAtDestination)) && (
         <div className="mt-4 border-t border-border pt-4">
           <p className="text-sm font-semibold">{status === "picked_up" ? "Your rider has arrived" : "Ride started"}</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -51,6 +66,10 @@ export function TripRiderCard({ tripId, status }: { tripId: string; status: stri
 
       {status === "completed" && (
         <div className="mt-4 border-t border-border pt-4">
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-success"><CheckCircle2 className="size-4" /> Ride completed</p>
+          {riderAtDestination && !iConfirmedCompletion && (
+            <Button variant="secondary" className="mb-3 w-full" onClick={() => complete.mutate()} disabled={complete.isPending}>I also reached my destination</Button>
+          )}
           {p.my_rating ? (
             <p className="text-sm">You rated this ride {p.my_rating} ★. Thank you.</p>
           ) : (

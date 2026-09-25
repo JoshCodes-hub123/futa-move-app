@@ -52,10 +52,11 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
     accepted: { to: "arriving", label: "Head to meeting point" },
     arriving: { to: "picked_up", label: "I've arrived" },
     picked_up: { to: "in_progress", label: "Start ride" },
-    in_progress: { to: "completed", label: "Complete ride" },
+    in_progress: { to: "completed", label: "Arrived at destination" },
   };
   const confirmed = useQuery({ queryKey: ["rider-start-confirmed", trip.id, s], queryFn: () => riderConfirmedStart(trip.id), enabled: s === "picked_up", refetchInterval: 8000 });
-  const step = s === "picked_up" && confirmed.data ? undefined : next[s];
+  const arrived = useQuery({ queryKey: ["rider-dest-arrived", trip.id, s], queryFn: () => riderConfirmedStart(trip.id, "destination_arrival"), enabled: s === "in_progress", refetchInterval: 8000 });
+  const step = (s === "picked_up" && confirmed.data) || (s === "in_progress" && arrived.data) ? undefined : next[s];
   return (
     <section className="mt-8 surface-panel p-5">
       <div className="flex items-center justify-between">
@@ -75,6 +76,7 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
         )}
         {step && <Button size="lg" onClick={() => act.mutate(step.to)} disabled={act.isPending}>{act.isPending && <Loader2 className="animate-spin" />}{step.label}</Button>}
         {s === "picked_up" && confirmed.data && <p className="text-sm text-muted-foreground">You confirmed pickup. The ride starts as soon as one passenger confirms in the app.</p>}
+        {s === "in_progress" && arrived.data && <p className="text-sm text-muted-foreground">Arrived — waiting for a passenger to confirm the ride is completed. You'll be free for new rides once one confirms.</p>}
         {(s === "accepted" || s === "arriving") && (withdrawing ? (
           <>
             <Input placeholder="Why can't you take this ride?" value={reason} onChange={(e) => setReason(e.target.value)} />
