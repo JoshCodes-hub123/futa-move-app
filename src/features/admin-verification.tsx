@@ -63,7 +63,7 @@ export function AdminVerificationPage() {
   const admin = useQuery({ queryKey: ["am-admin"], queryFn: amIAdmin });
   const [type, setType] = useState<"student" | "lecturer">("student");
   const [status, setStatus] = useState<"pending" | "verified" | "rejected">("pending");
-  const pending = useQuery({ queryKey: ["admin-pending", type, status], queryFn: () => listPendingSubmissions(type, status), enabled: admin.data === true });
+  const pending = useQuery({ queryKey: ["admin-pending", type, status], queryFn: (): Promise<VerificationSubmission[]> => listPendingSubmissions(type, status), enabled: admin.data === true });
   return (
     <main className="min-h-screen bg-background px-5 py-8 sm:px-10">
       <div className="mx-auto max-w-5xl">
