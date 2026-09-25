@@ -167,7 +167,7 @@ function TripCard({ t, riderName, passengers, dispatch, parts, onChanged }: { t:
           {canAssign && (
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
-                <select className="h-10 min-w-56 rounded-md border border-input bg-background px-3" value={rider} onChange={(e) => setRider(e.target.value)}>
+                <select className="h-10 w-full rounded-md sm:w-auto sm:min-w-56 border border-input bg-background px-3" value={rider} onChange={(e) => setRider(e.target.value)}>
                   <option value="">{riders.isLoading ? "Loading riders…" : "Choose an approved rider"}</option>
                   {riders.data?.map((r) => (
                     <option key={r.user_id} value={r.user_id} disabled={r.busy || r.user_id === t.rider_id}>
