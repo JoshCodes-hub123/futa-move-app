@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 
 /** Mirrors public.ride_capacity() — the database is the authority. */
@@ -57,7 +58,7 @@ export class RideGroupError extends Error {}
 /** Runs matching for the signed-in student's request (joins or forms a compatible group). */
 export async function matchRideRequest(requestId: string): Promise<MatchResult> {
   const { data, error } = await supabase.rpc("match_ride_request", { p_request_id: requestId });
-  if (error) throw new RideGroupError(error.message);
+  if (error) throw new RideGroupError(friendlyMessage(error.message));
   return data as unknown as MatchResult;
 }
 
@@ -69,22 +70,22 @@ export async function getRideGroup(groupId: string): Promise<RideGroup> {
 
 export async function addGroupMember(groupId: string): Promise<{ added: boolean; reason?: "full" | "none_available" }> {
   const { data, error } = await supabase.rpc("add_group_member", { p_group_id: groupId });
-  if (error) throw new RideGroupError(error.message);
+  if (error) throw new RideGroupError(friendlyMessage(error.message));
   return data as unknown as { added: boolean; reason?: "full" | "none_available" };
 }
 
 /** Confirms the specific proposal the student saw; fails if it changed meanwhile. */
 export async function confirmMeetingPoint(groupId: string, version: number): Promise<void> {
   const { error } = await supabase.rpc("confirm_meeting_point", { p_group_id: groupId, p_version: version });
-  if (error) throw new RideGroupError(error.message);
+  if (error) throw new RideGroupError(friendlyMessage(error.message));
 }
 
 export async function leaveRideGroup(groupId: string): Promise<void> {
   const { error } = await supabase.rpc("leave_ride_group", { p_group_id: groupId });
-  if (error) throw new RideGroupError(error.message);
+  if (error) throw new RideGroupError(friendlyMessage(error.message));
 }
 
 export async function setMeetingPoint(groupId: string, locationId: string, note: string): Promise<void> {
   const { error } = await supabase.rpc("set_meeting_point", { p_group_id: groupId, p_location_id: locationId, p_note: note.trim() });
-  if (error) throw new RideGroupError(error.message);
+  if (error) throw new RideGroupError(friendlyMessage(error.message));
 }

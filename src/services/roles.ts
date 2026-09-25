@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -12,14 +13,14 @@ function parse(data: unknown): AppRole | null {
 
 export async function getMyRole(): Promise<AppRole | null> {
   const { data, error } = await supabase.rpc("get_my_role");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return parse(data);
 }
 
 /** Only succeeds in granting 'student' when the account has no role at all. */
 export async function claimStudentRole(): Promise<AppRole | null> {
   const { data, error } = await supabase.rpc("claim_student_role");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return parse(data);
 }
 
@@ -34,6 +35,6 @@ export function homeForRole(role: AppRole | null): "/student/home" | "/rider/hom
 /** Converts a brand-new account into a lecturer account (server-checked). */
 export async function claimLecturerRole(): Promise<AppRole | null> {
   const { data, error } = await supabase.rpc("claim_lecturer_role");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return parse(data);
 }

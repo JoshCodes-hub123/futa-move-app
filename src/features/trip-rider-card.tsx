@@ -10,11 +10,11 @@ export function TripRiderCard({ tripId, status, departure }: { tripId: string; s
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["trip-rider", tripId, status], queryFn: () => getTripRiderProfile(tripId), refetchInterval: 10000 });
   const refresh = async () => { await qc.invalidateQueries({ queryKey: ["trip-rider", tripId] }); await qc.invalidateQueries({ queryKey: ["ride-group"] }); await qc.invalidateQueries({ queryKey: ["my-group-trips"] }); };
-  const confirm = useMutation({ mutationFn: () => confirmPickup(tripId), onSuccess: refresh });
-  const complete = useMutation({ mutationFn: () => confirmCompletion(tripId), onSuccess: refresh });
+  const confirm = useMutation({ mutationFn: () => confirmPickup(tripId), onSuccess: refresh, onError: refresh });
+  const complete = useMutation({ mutationFn: () => confirmCompletion(tripId), onSuccess: refresh, onError: refresh });
   const [stars, setStars] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
-  const rate = useMutation({ mutationFn: () => rateRider(tripId, stars, tags), onSuccess: refresh });
+  const rate = useMutation({ mutationFn: () => rateRider(tripId, stars, tags), onSuccess: refresh, onError: refresh });
   const p = q.data;
   if (!p) return null;
   const pick = p.confirmations.filter((c) => c.type === "pickup_start");

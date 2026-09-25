@@ -110,15 +110,15 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
   const riders = useQuery({ queryKey: ["eligible-riders"], queryFn: adminListEligibleRiders, enabled: open });
   const history = useQuery({ queryKey: ["trip-history", t.id], queryFn: () => getTripHistory(t.id), enabled: open });
   const after = async () => { await onChanged(); await history.refetch(); };
-  const assign = useMutation({ mutationFn: () => adminAssignRider(t.id, rider, override), onSuccess: async () => { setRider(""); setOverride(false); await after(); } });
+  const assign = useMutation({ mutationFn: () => adminAssignRider(t.id, rider, override), onSuccess: async () => { setRider(""); setOverride(false); await after(); }, onError: after });
   const cancel = useMutation({
     mutationFn: () => (outcome === "rider_no_show" ? adminMarkRiderNoShow(t.id, reason) : adminCancelTrip(t.id, outcome, reason)),
-    onSuccess: async () => { setReason(""); await after(); },
+    onSuccess: async () => { setReason(""); await after(); }, onError: after,
   });
-  const redispatch = useMutation({ mutationFn: () => adminRedispatch(t.id), onSuccess: after });
+  const redispatch = useMutation({ mutationFn: () => adminRedispatch(t.id), onSuccess: after, onError: after });
   const issuesQ = useQuery({ queryKey: ["admin-trip-issues"], queryFn: adminTripIssues, refetchInterval: 15000 });
   const issues = issuesQ.data?.[t.id] ?? [];
-  const complete = useMutation({ mutationFn: () => adminCompleteTrip(t.id, reason), onSuccess: async () => { setReason(""); await issuesQ.refetch(); await after(); } });
+  const complete = useMutation({ mutationFn: () => adminCompleteTrip(t.id, reason), onSuccess: async () => { setReason(""); await issuesQ.refetch(); await after(); }, onError: after });
   const canAssign = s === "confirmed" || s === "assigned" || s === "accepted";
   const riderOnTrip = !!t.rider_id && (s === "assigned" || s === "accepted" || s === "arriving");
   const err = assign.error ?? cancel.error ?? redispatch.error ?? complete.error;

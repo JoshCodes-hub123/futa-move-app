@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, Enums } from "@/integrations/supabase/types";
 
@@ -22,14 +23,14 @@ export async function listActiveLocations(): Promise<FutaLocation[]> {
     .order("category")
     .order("display_order")
     .order("name");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data ?? [];
 }
 
 /** Admin: all locations, active and inactive. */
 export async function listAllLocations(): Promise<FutaLocation[]> {
   const { data, error } = await supabase.from("locations").select("*").order("category").order("display_order").order("name");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data ?? [];
 }
 
@@ -39,12 +40,12 @@ export async function saveLocation(id: string | null, input: LocationInput): Pro
   const { error } = id
     ? await supabase.from("locations").update(input).eq("id", id)
     : await supabase.from("locations").insert(input);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
 }
 
 export async function setLocationActive(id: string, active: boolean): Promise<void> {
   const { error } = await supabase.from("locations").update({ active }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
 }
 
 export async function uploadLocationImage(file: File): Promise<string> {
@@ -52,7 +53,7 @@ export async function uploadLocationImage(file: File): Promise<string> {
   if (file.size > 5 * 1024 * 1024) throw new Error("Images must be 5 MB or smaller.");
   const path = `${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
   const { error } = await supabase.storage.from("location-images").upload(path, file, { contentType: file.type });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return path;
 }
 

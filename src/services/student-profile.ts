@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -18,7 +19,7 @@ export async function getMyStudentProfile(): Promise<StudentProfile | null> {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return null;
   const { data, error } = await supabase.from("student_profiles").select("*").eq("id", auth.user.id).maybeSingle();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data;
 }
 
@@ -42,7 +43,7 @@ async function upload(bucket: "profile-photos" | "student-id-cards", userId: str
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `${userId}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw new Error(`Upload failed. ${error.message}`);
+  if (error) throw new Error(`Upload failed. ${friendlyMessage(friendlyMessage(error.message))}`);
   return path;
 }
 
@@ -62,7 +63,7 @@ export async function submitVerification(input: { fullName: string; matricNumber
     p_avatar_path: avatarPath,
     p_id_card_path: idCardPath,
   });
-  if (error) throw new Error(`We couldn't submit your details. ${error.message}`);
+  if (error) throw new Error(`We couldn't submit your details. ${friendlyMessage(friendlyMessage(error.message))}`);
 }
 
 /** Lecturer verification: same private buckets and review flow as students. */
@@ -75,7 +76,7 @@ export async function submitLecturerVerification(input: { fullName: string; staf
     p_full_name: input.fullName, p_staff_id: input.staffId, p_faculty: input.faculty, p_department: input.department,
     p_phone: input.phone, p_academic_title: input.academicTitle, p_avatar_path: avatarPath, p_id_card_path: idCardPath,
   });
-  if (error) throw new Error(`We couldn't submit your details. ${error.message}`);
+  if (error) throw new Error(`We couldn't submit your details. ${friendlyMessage(friendlyMessage(error.message))}`);
 }
 
 // ===== Admin =====
@@ -91,11 +92,11 @@ export async function listPendingSubmissions(accountType?: "student" | "lecturer
   let q = supabase.from("verification_submissions").select("*").eq("status", status);
   if (accountType) q = q.eq("account_type", accountType);
   const { data, error } = await q.order("created_at", { ascending: status === "pending" }).limit(200);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data;
 }
 
 export async function reviewSubmission(id: string, approve: boolean, reason?: string) {
   const { error } = await supabase.rpc("review_verification", { p_submission_id: id, p_approve: approve, ...(reason ? { p_reason: reason } : {}) });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
 }
