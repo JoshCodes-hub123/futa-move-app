@@ -120,6 +120,13 @@
       "when": 1790315673157,
       "tag": "0016_available_riders_and_admin_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790316819469,
+      "tag": "0017_available_riders_during_pending_offer",
+      "breakpoints": true
     }
   ]
 }
