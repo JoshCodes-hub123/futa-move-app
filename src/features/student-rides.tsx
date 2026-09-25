@@ -43,9 +43,9 @@ function StatusPill({ status, trip }: { status: RideRequest["status"]; trip?: Tr
   );
 }
 
-/** Pickup onward, or once the ride has ended, cancelling is no longer allowed (the database enforces this too). */
+/** Once the rider is on the way, or the ride has ended, cancelling is no longer allowed (matches the database rule). */
 function tripBlocksCancel(t?: TripStatus) {
-  return !!t && (t === "picked_up" || t === "in_progress" || isTerminal(t));
+  return !!t && (t === "arriving" || t === "picked_up" || t === "in_progress" || isTerminal(t));
 }
 
 function RequestRow({ request, trip, dispatchState }: { request: RideRequest; trip?: TripStatus | undefined; dispatchState?: string | undefined }) {
