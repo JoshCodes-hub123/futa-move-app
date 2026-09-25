@@ -82,6 +82,12 @@ export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "statu
   fail(error);
   return data ?? [];
 }
+/** Group size at confirmation (RLS: only the group's members, its rider, or admins can read it). */
+export async function tripMemberCount(tripId: string): Promise<number> {
+  const { data, error } = await supabase.from("trips").select("member_count").eq("id", tripId).maybeSingle();
+  fail(error);
+  return data?.member_count ?? 2;
+}
 
 /* ---------- riders ---------- */
 export interface AvailableTrip {
