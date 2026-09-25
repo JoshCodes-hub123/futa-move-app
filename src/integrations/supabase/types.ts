@@ -1133,6 +1133,10 @@ export type Database = {
       match_ride_request: { Args: { p_request_id: string }; Returns: Json }
       match_time_tolerance: { Args: never; Returns: string }
       normalize_place: { Args: { _t: string }; Returns: string }
+      passenger_confirm_completion: {
+        Args: { p_trip_id: string }
+        Returns: Json
+      }
       passenger_confirm_pickup: { Args: { p_trip_id: string }; Returns: Json }
       pick_compatible_requests: {
         Args: {

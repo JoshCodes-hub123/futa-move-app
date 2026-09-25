@@ -85,6 +85,13 @@
       "when": 1790295321350,
       "tag": "0011_mutual_start_and_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790297540380,
+      "tag": "0012_ride_completion_confirmation",
+      "breakpoints": true
     }
   ]
 }
