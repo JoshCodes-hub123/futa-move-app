@@ -125,7 +125,7 @@ export function StudentRidesPage() {
                   compact
                   icon={Navigation}
                   title="No active ride request"
-                  description="Start a request and we'll look for students heading your way."
+                  description="Start a request and we'll look for passengers heading your way."
                   action={
                     <Button asChild>
                       <Link to="/student/request">Request a ride</Link>

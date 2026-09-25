@@ -155,7 +155,7 @@ export function RideRequestPage({
                 >
                   <span className="block text-sm font-semibold">{type === "shared" ? "Shared ride" : "Private keke"}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {type === "shared" ? "Split with verified students" : "Just your party, no matching"}
+                    {type === "shared" ? "Split with verified FUTA users" : "Just your party, no matching"}
                   </span>
                 </button>
               ))}
@@ -232,7 +232,7 @@ export function RideRequestPage({
             <div className="mt-7 grid gap-3">
               <TimeOption
                 label="Now"
-                detail="Leave as soon as students are found"
+                detail="Leave as soon as passengers are found"
                 active={useNow}
                 onSelect={() => {
                   setUseNow(true);
@@ -288,7 +288,7 @@ export function RideRequestPage({
           <section className="mt-8">
             <ScreenHeader eyebrow="Ride request" title="Review your ride" />
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Check the details before we look for students heading your way.
+              Check the details before we look for passengers heading your way.
             </p>
 
             <div className="mt-7">
@@ -310,7 +310,7 @@ export function RideRequestPage({
 
             <Button size="lg" className="mt-7 w-full" onClick={submit} disabled={submitting}>
               {submitting ? <Loader2 className="animate-spin" /> : <Users />}
-              {submitting ? "Creating your request…" : rideType === "shared" ? "Find students" : "Save request"}
+              {submitting ? "Creating your request…" : rideType === "shared" ? "Find passengers" : "Save request"}
             </Button>
             <Button variant="secondary" size="lg" className="mt-3 w-full" onClick={() => setStep("route")} disabled={submitting}>
               <Pencil /> Edit
