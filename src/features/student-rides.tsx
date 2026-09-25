@@ -314,6 +314,7 @@ function PrivateStartPanel({ requestId }: { requestId: string }) {
 
 function MatchingPanel({ requestId, partySize }: { requestId: string; partySize: number }) {
   const queryClient = useQueryClient();
+  const capacity = useQuery({ queryKey: ["ride-capacity"], queryFn: getRideCapacity, staleTime: Infinity });
   const match = useQuery({
     queryKey: ["ride-match", requestId],
     queryFn: () => matchRideRequest(requestId),
