@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, CarFront, CircleUserRound, Home, MapPinPlus } from "lucide-react";
+import { Activity, CarFront, CircleUserRound, History, Home, MapPinPlus } from "lucide-react";
 import { Brand } from "./brand";
 import { cn } from "@/lib/utils";
 
