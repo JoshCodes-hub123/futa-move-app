@@ -33,7 +33,7 @@ export function AvailableRiders({ tripId }: { tripId: string }) {
       </div>
       {q.isLoading ? <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
         : q.isError ? <p className="mt-3 text-sm text-destructive">{q.error.message}</p>
-        : !v?.available ? <p className="mt-3 text-sm text-muted-foreground">{v?.reason === "offer_pending" ? "A rider is being offered your ride right now. Please wait a moment." : "A rider has already been found for this ride."}</p>
+        : !v?.available ? <p className="mt-3 text-sm text-muted-foreground">A rider has already been found for this ride.</p>
         : v.riders.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No riders are free right now. We'll keep looking automatically.</p>
         : (
           <ul className="mt-3 divide-y divide-border">
