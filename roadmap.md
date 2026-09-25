@@ -16,3 +16,7 @@
 - [x] Ride lifecycle: confirm ride, trips, rider accept/advance, admin /admin/rides, audit history
 - [x] Phase 2B Smart Dispatch: availability, offers, fairness scoring, retry/escalation, audit, admin /admin/dispatch
 - [ ] Phase 2B signed-in browser walkthrough (student A/B, rider, admin) — not yet performed
+
+- [x] Stage 1: mutual ride start, rider profiles, ratings
+- [ ] Stage 2: lecturer registration (waiting for go-ahead)
+- [ ] Stage 3: student "see available riders" fallback (waiting for go-ahead)
