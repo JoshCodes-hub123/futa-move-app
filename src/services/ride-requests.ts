@@ -109,3 +109,10 @@ export function roundedSuggestions(from = new Date()): { label: string; iso: str
     };
   });
 }
+
+/** Sends a Private Keke request into the normal rider search. Safe to call again; the database decides. */
+export async function startPrivateRide(requestId: string): Promise<{ started: boolean; reason?: "not_verified" | "departure_passed" | "pickup_unavailable" | "already_in_ride"; group_id?: string }> {
+  const { data, error } = await supabase.rpc("start_private_ride", { p_request_id: requestId });
+  if (error) throw new RideRequestError(friendlyMessage(error.message));
+  return data as unknown as { started: boolean; reason?: "not_verified" | "departure_passed" | "pickup_unavailable" | "already_in_ride"; group_id?: string };
+}

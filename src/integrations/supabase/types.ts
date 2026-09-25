@@ -316,6 +316,7 @@ export type Database = {
           departure_time: string
           destination_text: string
           id: string
+          is_private: boolean
           meeting_point_location_id: string | null
           meeting_point_note: string | null
           meeting_point_text: string
@@ -329,6 +330,7 @@ export type Database = {
           departure_time: string
           destination_text: string
           id?: string
+          is_private?: boolean
           meeting_point_location_id?: string | null
           meeting_point_note?: string | null
           meeting_point_text: string
@@ -342,6 +344,7 @@ export type Database = {
           departure_time?: string
           destination_text?: string
           id?: string
+          is_private?: boolean
           meeting_point_location_id?: string | null
           meeting_point_note?: string | null
           meeting_point_text?: string
@@ -1344,6 +1347,7 @@ export type Database = {
         Args: { p_accuracy: number; p_lat: number; p_lng: number }
         Returns: undefined
       }
+      start_private_ride: { Args: { p_request_id: string }; Returns: Json }
       student_available_riders: { Args: { p_trip_id: string }; Returns: Json }
       student_dispatch_ping: {
         Args: { p_group_id: string }
