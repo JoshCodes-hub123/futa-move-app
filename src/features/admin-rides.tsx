@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { adminTripPassengers } from "@/services/admin-ops";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +101,7 @@ function whyWaiting(t: Trip, d?: DispatchOverviewRow, p?: TripParticipants): str
   return null;
 }
 
-function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; riderName?: string | undefined; dispatch?: DispatchOverviewRow | undefined; parts?: TripParticipants | undefined; onChanged: () => Promise<void> }) {
+function TripCard({ t, riderName, passengers, dispatch, parts, onChanged }: { t: Trip; riderName?: string | undefined; passengers?: string | undefined; dispatch?: DispatchOverviewRow | undefined; parts?: TripParticipants | undefined; onChanged: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [rider, setRider] = useState("");
   const [override, setOverride] = useState(false);
@@ -130,9 +131,10 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
     <div className={`surface-panel p-4 text-sm ${ds === "escalated" && waitingForRider(t) ? "border-destructive/60" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-semibold">{t.meeting_point_text} → {t.destination_text}</p>
+          <p className="break-words font-semibold">{t.meeting_point_text} → {t.destination_text}</p>
           <p className="text-xs text-muted-foreground">Departs {fmtTime(t.departure_time)} · {t.passenger_count} passengers in {t.member_count} bookings · Trip {t.id.slice(0, 8)}</p>
           {parts && <p className="text-xs text-muted-foreground">{parts.students} student{parts.students === 1 ? "" : "s"} · {parts.lecturers} lecturer{parts.lecturers === 1 ? "" : "s"}</p>}
+          {passengers && <p className="break-words text-xs">Passengers: {passengers}</p>}
           <p className="mt-1 text-xs">Rider: {riderName ?? (t.rider_id ? t.rider_id.slice(0, 8) : "None")}{parts?.rider_availability ? ` (${parts.rider_availability})` : ""}{parts?.assignment_method ? ` · via ${parts.assignment_method}` : ""}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
@@ -156,6 +158,7 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
         <div className="mt-2 rounded-md border border-destructive/60 p-2 text-xs">
           <p className="font-semibold text-destructive">Needs admin action</p>
           {issues.map((i) => <p key={i}>• {TRIP_ISSUE_LABEL[i]}</p>)}
+          <p className="mt-1 text-muted-foreground">Open "Manage, dispatch & history" to reassign, mark a no-show, cancel with a reason, or complete an arrived ride. Every action is recorded with your name.</p>
         </div>
       )}
       <Button variant="ghost" size="sm" className="mt-2 px-0" onClick={() => setOpen(!open)}>{open ? "Hide details" : "Manage, dispatch & history"}</Button>
@@ -219,29 +222,60 @@ function TripCard({ t, riderName, dispatch, parts, onChanged }: { t: Trip; rider
 export function AdminRidesPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState("attention");
+  const [search, setSearch] = useState("");
+  const [day, setDay] = useState("");
   const trips = useQuery({ queryKey: ["admin-trips"], queryFn: adminListTrips, refetchInterval: 15000 });
   const overview = useQuery({ queryKey: ["admin-dispatch-overview"], queryFn: adminDispatchOverview, refetchInterval: 15000 });
   const names = useQuery({ queryKey: ["admin-rider-names"], queryFn: adminRiderNames });
   const parts = useQuery({ queryKey: ["admin-trip-participants"], queryFn: adminTripParticipants, refetchInterval: 15000 });
-  const f = FILTERS.find((x) => x.key === filter)!;
-  const rows = (trips.data ?? []).filter(f.match);
+  const issues = useQuery({ queryKey: ["admin-trip-issues"], queryFn: adminTripIssues, refetchInterval: 15000 });
+  const pax = useQuery({ queryKey: ["admin-trip-passengers"], queryFn: adminTripPassengers, refetchInterval: 60000 });
+  const needsAction = (t: Trip) => (waitingForRider(t) && t.dispatch_state === "escalated") || (issues.data?.[t.id]?.length ?? 0) > 0;
+  const filters = [
+    { key: "attention", label: "Needs admin action", match: needsAction },
+    { key: "active", label: "Active", match: (t: Trip) => !isTerminal(t.status) },
+    ...FILTERS.filter((x) => x.key !== "attention" && x.key !== "all"),
+    { key: "noshow", label: "No-show", match: (t: Trip) => t.status === "no_show" },
+    { key: "all", label: "All", match: () => true },
+  ];
+  const f = filters.find((x) => x.key === filter) ?? filters[0]!;
+  const term = search.trim().toLowerCase();
+  const base = (trips.data ?? []).filter((t) => {
+    if (day && new Date(t.departure_time).toLocaleDateString("en-CA") !== day) return false;
+    if (!term) return true;
+    const hay = [t.meeting_point_text, t.destination_text, t.id, t.rider_id ? names.data?.[t.rider_id] : "", pax.data?.[t.id]].join(" ").toLowerCase();
+    return hay.includes(term);
+  });
+  const rows = base.filter(f.match);
   const refresh = async () => {
-    await Promise.all(["admin-trips", "admin-dispatch-overview", "admin-trip-participants", "eligible-riders", "trip-dispatch"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+    await Promise.all(["admin-trips", "admin-dispatch-overview", "admin-trip-participants", "admin-trip-issues", "eligible-riders", "trip-dispatch", "admin-ops-overview"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
   };
   return (
-    <AdminFrame title="Rides" intro="Confirmed student groups, automatic dispatch, rider assignment and trip history.">
-      <div className="mt-6 flex flex-wrap gap-1">
-        {FILTERS.map((x) => (
-          <button key={x.key} type="button" onClick={() => setFilter(x.key)}
-            className={`rounded-full px-3 py-1.5 text-sm ${filter === x.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-            {x.label} ({(trips.data ?? []).filter(x.match).length})
-          </button>
-        ))}
+    <AdminFrame title="Rides" intro="Confirmed groups, automatic dispatch, rider assignment and trip history. Refreshes every 15 seconds.">
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+        <Input placeholder="Search rider, passenger, place or trip ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search rides" />
+        <div className="flex gap-2">
+          <Input type="date" className="w-auto" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Departure date" />
+          {(day || search) && <Button variant="ghost" onClick={() => { setDay(""); setSearch(""); }}>Clear</Button>}
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-1">
+        {filters.map((x) => {
+          const n = base.filter(x.match).length;
+          const hot = x.key === "attention" && n > 0;
+          return (
+            <button key={x.key} type="button" onClick={() => setFilter(x.key)}
+              className={`min-h-9 rounded-full px-3 py-1.5 text-sm ${filter === x.key ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted"} ${hot ? "text-destructive" : ""}`}>
+              {x.label} ({n})
+            </button>
+          );
+        })}
       </div>
       <div className="mt-6 space-y-3">
-        {trips.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : trips.isError ? <p className="text-sm text-destructive">{trips.error.message}</p>
-          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} dispatch={overview.data?.[t.id]} parts={parts.data?.[t.id]} onChanged={refresh} />)
-          : <p className="text-sm text-muted-foreground">No rides here.</p>}
+        {trips.isLoading ? <p className="text-sm text-muted-foreground">Loading rides…</p>
+          : trips.isError ? <div className="text-sm"><p className="text-destructive">{trips.error.message}</p><Button size="sm" variant="secondary" className="mt-2" onClick={() => void trips.refetch()}>Try again</Button></div>
+          : rows.length ? rows.map((t) => <TripCard key={t.id} t={t} riderName={t.rider_id ? names.data?.[t.rider_id] : undefined} passengers={pax.data?.[t.id]} dispatch={overview.data?.[t.id]} parts={parts.data?.[t.id]} onChanged={refresh} />)
+          : <p className="text-sm text-muted-foreground">{filter === "attention" && !term && !day ? "Nothing needs admin action right now." : "No rides match these filters."}</p>}
       </div>
     </AdminFrame>
   );
