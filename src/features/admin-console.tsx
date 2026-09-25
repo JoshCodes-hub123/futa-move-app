@@ -29,6 +29,7 @@ export function AdminNav() {
   const active = { className: `${link} bg-muted text-foreground font-medium` };
   return (
     <nav className="mt-6 flex flex-wrap gap-1" aria-label="Admin sections">
+      <Link to="/admin" className={link} activeProps={active} activeOptions={{ exact: true }}>Overview</Link>
       <Link to="/admin/verification" className={link} activeProps={active}>Verification</Link>
       <Link to="/admin/locations" className={link} activeProps={active}>Locations</Link>
       <Link to="/admin/location-suggestions" className={link} activeProps={active}>Location Suggestions</Link>

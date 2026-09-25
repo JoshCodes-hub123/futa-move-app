@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRiderRouteImport } from './routes/_authenticated/rider'
 import { Route as AuthenticatedRiderApplicationRouteImport } from './routes/_authenticated/rider-application'
 import { Route as AuthenticatedStudentRouteImport } from './routes/_authenticated/student'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminDispatchRouteImport } from './routes/_authenticated/admin.dispatch'
 import { Route as AuthenticatedAdminLocationSuggestionsRouteImport } from './routes/_authenticated/admin.location-suggestions'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin.locations'
@@ -114,6 +115,11 @@ const AuthenticatedStudentRoute = AuthenticatedStudentRouteImport.update({
   id: '/student',
   path: '/student',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedAdminDispatchRoute =
   AuthenticatedAdminDispatchRouteImport.update({
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/request': typeof AuthenticatedStudentRequestRoute
   '/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -278,7 +285,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/verification': typeof VerificationRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/rider': typeof AuthenticatedRiderRouteWithChildren
   '/rider-application': typeof AuthenticatedRiderApplicationRoute
   '/student': typeof AuthenticatedStudentRouteWithChildren
@@ -300,6 +306,7 @@ export interface FileRoutesByTo {
   '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/request': typeof AuthenticatedStudentRequestRoute
   '/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/student/rides': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -337,6 +344,7 @@ export interface FileRoutesById {
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/student/request': typeof AuthenticatedStudentRequestRoute
   '/_authenticated/student/suggest-location': typeof AuthenticatedStudentSuggestLocationRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/student/rides/$id': typeof AuthenticatedStudentRidesIdRoute
   '/_authenticated/student/rides/': typeof AuthenticatedStudentRidesIndexRoute
 }
@@ -374,6 +382,7 @@ export interface FileRouteTypes {
     | '/student/profile'
     | '/student/request'
     | '/student/suggest-location'
+    | '/admin/'
     | '/student/rides/$id'
     | '/student/rides/'
   fileRoutesByTo: FileRoutesByTo
@@ -387,7 +396,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verification'
     | '/account-setup'
-    | '/admin'
     | '/rider'
     | '/rider-application'
     | '/student'
@@ -409,6 +417,7 @@ export interface FileRouteTypes {
     | '/student/profile'
     | '/student/request'
     | '/student/suggest-location'
+    | '/admin'
     | '/student/rides/$id'
     | '/student/rides'
   id:
@@ -445,6 +454,7 @@ export interface FileRouteTypes {
     | '/_authenticated/student/profile'
     | '/_authenticated/student/request'
     | '/_authenticated/student/suggest-location'
+    | '/_authenticated/admin/'
     | '/_authenticated/student/rides/$id'
     | '/_authenticated/student/rides/'
   fileRoutesById: FileRoutesById
@@ -560,6 +570,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/student'
       preLoaderRoute: typeof AuthenticatedStudentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/dispatch': {
       id: '/_authenticated/admin/dispatch'
@@ -712,6 +729,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminRidesRoute: typeof AuthenticatedAdminRidesRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminVerificationRoute: typeof AuthenticatedAdminVerificationRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -723,6 +741,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminRidesRoute: AuthenticatedAdminRidesRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminVerificationRoute: AuthenticatedAdminVerificationRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

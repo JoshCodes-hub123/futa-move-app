@@ -24,8 +24,8 @@ export async function claimStudentRole(): Promise<AppRole | null> {
   return parse(data);
 }
 
-export function homeForRole(role: AppRole | null): "/student/home" | "/rider/home" | "/admin/verification" | "/rider-application" | "/account-setup" {
-  if (role === "admin") return "/admin/verification";
+export function homeForRole(role: AppRole | null): "/student/home" | "/rider/home" | "/admin" | "/rider-application" | "/account-setup" {
+  if (role === "admin") return "/admin";
   if (role === "rider") return "/rider/home";
   if (role === "student" || role === "lecturer") return "/student/home";
   if (role === "applicant") return "/rider-application";
