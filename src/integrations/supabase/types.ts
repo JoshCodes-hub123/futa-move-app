@@ -984,6 +984,17 @@ export type Database = {
         Args: { p_override?: boolean; p_rider_id: string; p_trip_id: string }
         Returns: undefined
       }
+      admin_audit_log: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          at: string
+          reason: string
+          target: string
+          trip_id: string
+        }[]
+      }
       admin_cancel_trip: {
         Args: { p_outcome: string; p_reason: string; p_trip_id: string }
         Returns: undefined
@@ -1045,7 +1056,22 @@ export type Database = {
         Args: { p_reason: string; p_trip_id: string }
         Returns: undefined
       }
+      admin_ops_overview: { Args: never; Returns: Json }
       admin_redispatch: { Args: { p_trip_id: string }; Returns: undefined }
+      admin_rider_pool: {
+        Args: never
+        Returns: {
+          availability: string
+          completed_rides: number
+          current_trip_id: string
+          current_trip_route: string
+          current_trip_status: string
+          location_updated_at: string
+          rating_avg: number
+          rating_count: number
+          user_id: string
+        }[]
+      }
       admin_trip_dispatch: { Args: { p_trip_id: string }; Returns: Json }
       admin_trip_issues: {
         Args: never
@@ -1065,6 +1091,13 @@ export type Database = {
           rider_availability: string
           rider_start_confirmed: boolean
           students: number
+          trip_id: string
+        }[]
+      }
+      admin_trip_passengers: {
+        Args: never
+        Returns: {
+          passenger_names: string
           trip_id: string
         }[]
       }

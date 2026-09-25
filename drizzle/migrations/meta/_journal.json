@@ -141,6 +141,13 @@
       "when": 1790318516962,
       "tag": "0019_phase5_function_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790319277361,
+      "tag": "0020_phase6_admin_operations",
+      "breakpoints": true
     }
   ]
 }
