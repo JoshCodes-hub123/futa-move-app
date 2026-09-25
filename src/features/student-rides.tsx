@@ -21,6 +21,7 @@ import {
 import { confirmRide, isCancelled, isTerminal, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
 import { GroupChat } from "@/features/group-chat";
 import { TripRiderCard } from "@/features/trip-rider-card";
+import { AvailableRiders } from "@/features/available-riders";
 import { pingDispatch } from "@/services/dispatch";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
@@ -627,6 +628,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
       </div>
       {g.meeting_point_note && <p className="mt-3 text-xs text-muted-foreground">Meeting point note: {g.meeting_point_note}</p>}
       {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} />}
+      {t.status === "confirmed" && !t.rider && <AvailableRiders tripId={t.id} />}
       {!cancelled && (
         <ol className="mt-8 space-y-3">
           {STUDENT_STEPS.map((s) => {
