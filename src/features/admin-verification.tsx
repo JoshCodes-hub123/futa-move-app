@@ -35,38 +35,51 @@ function SubmissionRow({ s }: { s: VerificationSubmission }) {
       <div className="min-w-0">
         <p className="text-lg font-bold tracking-tight">{s.full_name}</p>
         <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">Matric</dt><dd className="font-medium">{s.matric_number}</dd>
-          <dt className="text-muted-foreground">Faculty</dt><dd className="font-medium">{s.faculty}</dd>
+          <dt className="text-muted-foreground">Type</dt><dd className="font-medium capitalize">{s.account_type}</dd>
+          <dt className="text-muted-foreground">{s.account_type === "lecturer" ? "Staff ID" : "Matric"}</dt><dd className="font-medium">{s.matric_number}</dd>
+          <dt className="text-muted-foreground">{s.account_type === "lecturer" ? "Faculty/School" : "Faculty"}</dt><dd className="font-medium">{s.faculty}</dd>
+          {s.account_type === "lecturer" && <><dt className="text-muted-foreground">Department</dt><dd className="font-medium">{s.department}</dd>
+          <dt className="text-muted-foreground">Phone</dt><dd className="font-medium">{s.phone}</dd>
+          {s.academic_title && <><dt className="text-muted-foreground">Title</dt><dd className="font-medium">{s.academic_title}</dd></>}</>}
           <dt className="text-muted-foreground">Submitted</dt><dd>{new Date(s.created_at).toLocaleString()}</dd>
+          {s.reviewed_at && <><dt className="text-muted-foreground">Reviewed</dt><dd>{new Date(s.reviewed_at).toLocaleString()}</dd></>}
+          {s.rejection_reason && <><dt className="text-muted-foreground">Reason</dt><dd>{s.rejection_reason}</dd></>}
         </dl>
         <p className="section-label mt-4">FUTA ID card</p>
-        <SecureImage bucket="student-id-cards" path={s.id_card_path} alt="FUTA student ID card" className="mt-2 h-44 w-full max-w-sm rounded-lg border border-border" />
+        <SecureImage bucket="student-id-cards" path={s.id_card_path} alt="FUTA ID card" className="mt-2 h-44 w-full max-w-sm rounded-lg border border-border" />
         {rejecting && <Textarea className="mt-4 max-w-sm" placeholder="Reason for rejection (shown to the student)" value={reason} onChange={(e) => setReason(e.target.value)} />}
         {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
       </div>
-      <div className="flex gap-2 md:flex-col">
+      {s.status === "pending" && <div className="flex gap-2 md:flex-col">
         <Button disabled={busy} onClick={() => void act(true)}><Check /> Approve</Button>
         {rejecting ? <Button variant="destructive" disabled={busy} onClick={() => void act(false)}><X /> Confirm reject</Button>
           : <Button variant="secondary" disabled={busy} onClick={() => setRejecting(true)}><X /> Reject</Button>}
-      </div>
+      </div>}
     </article>
   );
 }
 
 export function AdminVerificationPage() {
   const admin = useQuery({ queryKey: ["am-admin"], queryFn: amIAdmin });
-  const pending = useQuery({ queryKey: ["admin-pending"], queryFn: listPendingSubmissions, enabled: admin.data === true });
+  const [type, setType] = useState<"student" | "lecturer">("student");
+  const [status, setStatus] = useState<"pending" | "verified" | "rejected">("pending");
+  const pending = useQuery({ queryKey: ["admin-pending", type, status], queryFn: () => listPendingSubmissions(type, status), enabled: admin.data === true });
   return (
     <main className="min-h-screen bg-background px-5 py-8 sm:px-10">
       <div className="mx-auto max-w-5xl">
         <header className="flex items-center justify-between"><Brand compact /><SignOutButton /></header>
         <AdminNav />
-        <h1 className="display-title mt-10 text-3xl">Student verification</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Review pending submissions. Approving lets the student join shared ride matching.</p>
+        <h1 className="display-title mt-10 text-3xl">{type === "lecturer" ? "Lecturer verification" : "Student verification"}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Review submissions. Approving lets the person join shared ride matching. Resubmissions appear as new pending entries; earlier ones stay in history.</p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          {(["student", "lecturer"] as const).map((t) => <Button key={t} size="sm" variant={type === t ? "default" : "secondary"} onClick={() => setType(t)}>{t === "student" ? "Students" : "Lecturers"}</Button>)}
+          <span className="mx-1 w-px bg-border" />
+          {(["pending", "verified", "rejected"] as const).map((st) => <Button key={st} size="sm" variant={status === st ? "default" : "secondary"} onClick={() => setStatus(st)}>{st === "pending" ? "Pending" : st === "verified" ? "Approved" : "Rejected"}</Button>)}
+        </div>
         <div className="mt-8 divider-list border-t border-border">
           {admin.isLoading ? <LoadingState /> : admin.data !== true ? <EmptyState title="Administrators only" description="Your account doesn't have access to verification review." icon={ShieldCheck} />
             : pending.isLoading ? <LoadingState /> : pending.error ? <p className="py-6 text-sm text-destructive">{(pending.error as Error).message}</p>
-            : !pending.data?.length ? <EmptyState title="No pending submissions" description="New verification requests will appear here." icon={ShieldCheck} />
+            : !pending.data?.length ? <EmptyState title="Nothing here" description="Submissions matching this filter will appear here." icon={ShieldCheck} />
             : pending.data.map((s) => <SubmissionRow key={s.id} s={s} />)}
         </div>
       </div>
