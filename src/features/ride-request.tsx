@@ -317,7 +317,7 @@ export function RideRequestPage({
             </Button>
 
             <div className="mt-7">
-              <TrustNote>Only verified FUTA students can be matched with your ride.</TrustNote>
+              <TrustNote>Only verified FUTA users can be matched with your ride.</TrustNote>
             </div>
           </section>
         )}

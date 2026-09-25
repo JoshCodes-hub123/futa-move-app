@@ -45,7 +45,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             );
           })}
         </nav>
-        <p className="mt-auto text-xs leading-5 text-muted-foreground">Built for verified FUTA students.</p>
+        <p className="mt-auto text-xs leading-5 text-muted-foreground">Built for verified FUTA users.</p>
       </aside>
 
       <main className="mx-auto min-h-screen w-full max-w-app bg-background px-5 pb-28 pt-6 sm:px-8 sm:pt-9 lg:ml-64 lg:max-w-3xl lg:px-12 lg:pb-16 lg:pt-12">

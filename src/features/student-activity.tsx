@@ -65,7 +65,7 @@ async function loadActivity(uid: string): Promise<ActivityItem[]> {
   }
 
   for (const s of subs.data ?? []) {
-    items.push({ id: `vs-${s.id}`, at: s.created_at, title: "Verification submitted", detail: "Your FUTA student details were sent for review.", tone: "verify" });
+    items.push({ id: `vs-${s.id}`, at: s.created_at, title: "Verification submitted", detail: "Your FUTA verification details were sent for review.", tone: "verify" });
     if (s.reviewed_at && s.status === "verified") items.push({ id: `va-${s.id}`, at: s.reviewed_at, title: "Verification approved", detail: "You can now join shared rides.", tone: "done" });
     if (s.reviewed_at && s.status === "rejected") items.push({ id: `vr-${s.id}`, at: s.reviewed_at, title: "Verification needs resubmission", detail: s.rejection_reason || "Please correct your details and resubmit.", tone: "bad" });
   }

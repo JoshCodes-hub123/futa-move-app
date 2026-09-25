@@ -58,7 +58,7 @@ function RequestRow({ request, trip, dispatchState }: { request: RideRequest; tr
     >
       <div className="min-w-0 flex-1">
         <p className="section-label mb-2">
-          {trip && request.group_id ? studentTripLabel(trip, dispatchState) : request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for students" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
+          {trip && request.group_id ? studentTripLabel(trip, dispatchState) : request.status === "searching" && request.group_id ? "In a temporary group" : request.status === "searching" && request.ride_type === "private" ? "Private keke" : request.status === "searching" ? "Searching for passengers" : request.status === "cancelled" ? "Cancelled request" : "Draft request"}
         </p>
         <p className="truncate text-sm font-semibold">{request.origin_text}</p>
         <p className="truncate text-sm font-semibold text-muted-foreground">↓ {request.destination_text}</p>
@@ -208,7 +208,7 @@ export function RideRequestDetailPage({ id }: { id: string }) {
 
         {data && (
           <section className="mt-8">
-            {isSearching && data.group_id ? (
+            {data.group_id ? (
               <GroupPanel groupId={data.group_id} requestId={id} />
             ) : isSearching && isShared ? (
               <MatchingPanel requestId={id} partySize={data.party_size} />
@@ -218,7 +218,7 @@ export function RideRequestDetailPage({ id }: { id: string }) {
               <>
                 <h1 className="display-title text-[2rem]">Request cancelled</h1>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  This ride request is no longer searching for students.
+                  This ride request is no longer searching for passengers.
                 </p>
               </>
             )}
@@ -263,8 +263,8 @@ export function RideRequestDetailPage({ id }: { id: string }) {
                   title="Cancel this ride request?"
                   description={
                     data.group_id
-                      ? "You'll leave your group and we'll stop looking for students. The rest of the group stays together if at least two remain."
-                      : "We'll stop looking for students heading your way. You can always create a new request."
+                      ? "You'll leave your group and we'll stop looking for passengers. The rest of the group stays together if at least two remain."
+                      : "We'll stop looking for passengers heading your way. You can always create a new request."
                   }
                   confirmLabel="Cancel request"
                   onConfirm={() => cancel.mutate()}
@@ -335,7 +335,7 @@ function MatchingPanel({ requestId, partySize }: { requestId: string; partySize:
         </div>
         <h1 className="display-title mt-4 text-center text-[2rem]">Verification needed</h1>
         <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-muted-foreground">
-          Only verified FUTA students can be matched into shared rides. Your request is saved and will start matching once you're verified.
+          Only verified FUTA users can be matched into shared rides. Your request is saved and will start matching once you're verified.
         </p>
         <div className="mt-6 flex justify-center">
           <Button asChild variant="secondary">
@@ -358,7 +358,7 @@ function MatchingPanel({ requestId, partySize }: { requestId: string; partySize:
       </div>
       <h1 className="display-title mt-4 text-center text-[2rem]">Finding your people</h1>
       <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-muted-foreground">
-        We're looking for verified FUTA students with the same pickup, destination and time.
+        We're looking for verified FUTA passengers with the same pickup, destination and time.
       </p>
       <div className="mx-auto mt-6 max-w-xs">
         <SeatMeter filled={partySize} capacity={KEKE_CAPACITY} />
@@ -479,7 +479,7 @@ function GroupPanel({ groupId, requestId }: { groupId: string; requestId: string
                   {m.party_size > 1 && <span className="font-normal text-muted-foreground"> +{m.party_size - 1}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {m.is_organizer ? "Group organiser" : "Verified FUTA student"}
+                  {m.is_organizer ? "Group organiser" : "Verified FUTA passenger"}
                 </p>
               </div>
               {ready ? (
