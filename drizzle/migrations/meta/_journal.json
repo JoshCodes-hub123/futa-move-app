@@ -176,6 +176,13 @@
       "when": 1790325461614,
       "tag": "0024_storage_image_only_uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1790325657868,
+      "tag": "0025_fix_request_status_lock_role_check",
+      "breakpoints": true
     }
   ]
 }
