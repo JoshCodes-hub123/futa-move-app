@@ -22,3 +22,4 @@
 - [ ] Stage 2 real-account browser test (waiting on user)
 - [ ] Stage 3: student "see available riders" fallback (waiting for go-ahead)
 - [x] Phase 5 hardening: function permissions, plain-language errors, refresh after failed actions (signed-in browser regression blocked: no test session)
+- [x] Phase 6 operations: admin overview (/admin), ride search/date/needs-action filters, rider pool availability, admin audit trail (signed-in browser test pending)
