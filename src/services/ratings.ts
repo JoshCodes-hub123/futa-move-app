@@ -11,7 +11,7 @@ export const IMPROVE_TAGS = ["Late arrival", "Communication issue", "Driving con
 export interface TripRiderProfile {
   first_name: string; avatar_path: string | null; vehicle: string | null; plate: string | null;
   completed_rides: number; rating_avg: number | null; rating_count: number; distance_km: number | null;
-  my_rating: number | null; confirmations: { role: "rider" | "passenger"; is_me: boolean; at: string }[];
+  my_rating: number | null; confirmations: { role: "rider" | "passenger"; type: "pickup_start" | "destination_arrival" | "completion"; is_me: boolean; at: string }[];
 }
 
 export async function getTripRiderProfile(tripId: string): Promise<TripRiderProfile | null> {
@@ -29,13 +29,18 @@ export async function confirmPickup(tripId: string) {
   fail(error);
   return data as unknown as { started: boolean };
 }
+export async function confirmCompletion(tripId: string) {
+  const { data, error } = await supabase.rpc("passenger_confirm_completion", { p_trip_id: tripId });
+  fail(error);
+  return data as unknown as { completed: boolean };
+}
 export async function rateRider(tripId: string, stars: number, tags: string[]) {
   const { error } = await supabase.rpc("rate_rider", { p_trip_id: tripId, p_stars: stars, p_tags: tags });
   fail(error);
 }
-export async function riderConfirmedStart(tripId: string): Promise<boolean> {
+export async function riderConfirmedStart(tripId: string, type: "pickup_start" | "destination_arrival" = "pickup_start"): Promise<boolean> {
   const { data: auth } = await supabase.auth.getUser();
-  const { data, error } = await supabase.from("trip_confirmations").select("id").eq("trip_id", tripId).eq("user_id", auth.user?.id ?? "").maybeSingle();
+  const { data, error } = await supabase.from("trip_confirmations").select("id").eq("trip_id", tripId).eq("user_id", auth.user?.id ?? "").eq("confirmation_type", type).maybeSingle();
   fail(error);
   return !!data;
 }
