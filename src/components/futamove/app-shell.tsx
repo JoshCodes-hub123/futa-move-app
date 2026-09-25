@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, CarFront, CircleUserRound, Home, MapPinPlus } from "lucide-react";
+import { Activity, CarFront, CircleUserRound, History, Home, MapPinPlus } from "lucide-react";
 import { Brand } from "./brand";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ const nav = {
   ],
   rider: [
     { label: "Home", to: "/rider/home", icon: Home },
+    { label: "History", to: "/rider/trips", icon: History },
     { label: "Suggest", to: "/rider/suggest-location", icon: MapPinPlus },
     { label: "Profile", to: "/rider/profile", icon: CircleUserRound },
   ],

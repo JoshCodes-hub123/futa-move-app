@@ -19,7 +19,7 @@ import {
   listRideRequests,
   type RideRequest,
 } from "@/services/ride-requests";
-import { confirmRide, isCancelled, isTerminal, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
+import { cancelReasonText, confirmRide, isCancelled, isTerminal, listMyGroupTrips, studentTripLabel, tripMemberCount, type TripStatus } from "@/services/trips";
 import { GroupChat } from "@/features/group-chat";
 import { TripRiderCard } from "@/features/trip-rider-card";
 import { AvailableRiders } from "@/features/available-riders";
@@ -617,6 +617,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
   const done = t.status === "completed";
   const label = studentTripLabel(t.status, t.dispatch_state, t.confirmed_at);
   const waiting = t.status === "confirmed" || t.status === "assigned";
+  const size = useQuery({ queryKey: ["trip-size", t.id], queryFn: () => tripMemberCount(t.id), enabled: cancelled });
   useEffect(() => {
     if (t.status !== "confirmed") return;
     void pingDispatch(g.id);
@@ -629,7 +630,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
       <h1 className="display-title mt-2 text-[2rem]">{label}</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {cancelled
-          ? t.cancel_reason ?? "This ride was cancelled."
+          ? cancelReasonText({ status: t.status, member_count: size.data ?? 2, cancel_reason: t.cancel_reason }) ?? "This ride was cancelled."
           : waiting
             ? t.dispatch_state === "escalated"
               ? "We haven't found a rider yet, so the FUTAMOVE team is arranging one for your group. Stay close to the meeting point."

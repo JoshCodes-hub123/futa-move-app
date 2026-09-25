@@ -10,14 +10,14 @@ import { formatDepartureTime } from "@/services/ride-requests";
 import { riderConfirmedStart } from "@/services/ratings";
 import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, shareMyLocation, type Availability, type RideOffer } from "@/services/dispatch";
 import {
-  ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, riderReportPassengerNoShow, withdrawTrip,
+  ACTIVE_TRIP_STATUSES, advanceTrip, cancelReasonText, isPrivateTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, riderReportPassengerNoShow, withdrawTrip,
   type Trip, type TripStatus,
 } from "@/services/trips";
 
 const RIDER_LABEL: Record<TripStatus, string> = {
   confirmed: "Available", assigned: "Assigned to you", accepted: "Accepted", arriving: "Heading to pickup",
   picked_up: "Arrived · passengers on board", in_progress: "Trip started", completed: "Completed",
-  cancelled_by_student: "Cancelled", cancelled_by_rider: "Cancelled", cancelled_by_admin: "Cancelled", expired: "Expired", no_show: "No-show",
+  cancelled_by_student: "Cancelled by passenger", cancelled_by_rider: "Cancelled by rider", cancelled_by_admin: "Cancelled by admin", expired: "Expired", no_show: "No-show",
 };
 
 function Route({ from, to, when, pax, note }: { from: string; to: string; when: string; pax: number; note?: string | null }) {
@@ -221,23 +221,36 @@ export function RiderOperations() {
 }
 
 export function RiderTripsPage() {
-  const mine = useQuery({ queryKey: ["rider-trips"], queryFn: listMyRiderTrips });
+  const mine = useQuery({ queryKey: ["rider-trips"], queryFn: listMyRiderTrips, refetchOnWindowFocus: true });
+  // Only final states; active rides stay on the home screen. Server RLS returns only rides assigned to this rider.
   const past = (mine.data ?? []).filter((t) => t.status === "completed" || isCancelled(t.status));
   return (
     <AppShell role="rider">
-      <ScreenHeader title="Trips" />
+      <ScreenHeader eyebrow="Rider" title="Ride history" />
       <section className="mt-8">
-        {mine.isLoading ? <LoadingState /> : past.length ? (
+        {mine.isLoading ? <LoadingState /> : mine.error ? <p className="text-sm text-destructive">{mine.error.message}</p> : past.length ? (
           <div className="divider-list">
-            {past.map((t) => (
-              <div key={t.id} className="py-4">
-                <div className="mb-2 flex justify-between"><Badge variant={t.status === "completed" ? "success" : "outline"} className="rounded-full">{RIDER_LABEL[t.status as TripStatus]}</Badge>
-                  <span className="text-xs text-muted-foreground">{t.completed_at ? new Date(t.completed_at).toLocaleString() : t.cancelled_at ? new Date(t.cancelled_at).toLocaleString() : ""}</span></div>
-                <Route from={t.meeting_point_text} to={t.destination_text} when={t.departure_time} pax={t.passenger_count} />
-              </div>
-            ))}
+            {past.map((t) => {
+              const reason = t.status === "completed" ? null : cancelReasonText(t);
+              return (
+                <div key={t.id} className="py-4">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={t.status === "completed" ? "success" : "outline"} className="rounded-full">{RIDER_LABEL[t.status as TripStatus]}</Badge>
+                      <span className="text-xs font-semibold text-muted-foreground">{isPrivateTrip(t) ? "Private Keke" : "Shared ride"}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">Ride #{t.id.slice(0, 8).toUpperCase()}</span>
+                  </div>
+                  <Route from={t.meeting_point_text} to={t.destination_text} when={t.departure_time} pax={t.passenger_count} />
+                  <p className="mt-2 pl-6 text-xs text-muted-foreground">
+                    {t.completed_at ? `Completed ${new Date(t.completed_at).toLocaleString()}` : t.cancelled_at ? `Ended ${new Date(t.cancelled_at).toLocaleString()}` : ""}
+                    {reason ? ` · ${reason}` : ""}
+                  </p>
+                </div>
+              );
+            })}
           </div>
-        ) : <div className="surface-panel"><EmptyState compact title="No trips yet" description="Completed and cancelled trips will show here." icon={CalendarClock} /></div>}
+        ) : <div className="surface-panel"><EmptyState compact title="No rides yet" description="Completed, cancelled, expired and no-show rides you handled will show here." icon={CalendarClock} /></div>}
       </section>
     </AppShell>
   );

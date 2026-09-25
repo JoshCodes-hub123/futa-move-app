@@ -82,6 +82,12 @@ export async function listMyGroupTrips(): Promise<Pick<Trip, "group_id" | "statu
   fail(error);
   return data ?? [];
 }
+/** Group size at confirmation (RLS: only the group's members, its rider, or admins can read it). */
+export async function tripMemberCount(tripId: string): Promise<number> {
+  const { data, error } = await supabase.from("trips").select("member_count").eq("id", tripId).maybeSingle();
+  fail(error);
+  return data?.member_count ?? 2;
+}
 
 /* ---------- riders ---------- */
 export interface AvailableTrip {
@@ -177,6 +183,26 @@ export async function getTripHistory(tripId: string): Promise<TripHistory[]> {
   const { data, error } = await supabase.from("trip_status_history").select("*").eq("trip_id", tripId).order("created_at");
   fail(error);
   return data ?? [];
+}
+
+/** A shared group needs 2+ members to confirm, so a one-member trip is a Private Keke. */
+export function isPrivateTrip(t: { member_count: number }) {
+  return t.member_count <= 1;
+}
+const SHARED_ONLY_REASON = "Not enough passengers after a cancellation";
+const FINAL_REASON: Partial<Record<string, string>> = {
+  cancelled_by_student: "Cancelled by passenger", cancelled_by_rider: "Cancelled by rider",
+  cancelled_by_admin: "Cancelled by admin", expired: "Ride expired", no_show: "No-show",
+};
+/** Display-only: keeps specific stored reasons, but never shows shared-ride wording on a Private Keke. */
+export function cancelReasonText(t: { status: string; member_count: number; cancel_reason: string | null }) {
+  const r = t.cancel_reason?.trim();
+  if (r && !(r === SHARED_ONLY_REASON && isPrivateTrip(t))) return r;
+  return FINAL_REASON[t.status] ?? null;
+}
+export function historyReasonText(reason: string | null, toStatus: string, isPrivate: boolean) {
+  if (reason === SHARED_ONLY_REASON && isPrivate) return FINAL_REASON[toStatus] ?? null;
+  return reason;
 }
 
 export function fmtTime(iso: string | null) {

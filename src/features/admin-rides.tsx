@@ -7,6 +7,7 @@ import { AdminFrame } from "@/features/admin-console";
 import {
   ADMIN_TRIP_LABEL, TRIP_ISSUE_LABEL, adminAssignRider, adminCompleteTrip, adminTripIssues, adminCancelTrip, adminListEligibleRiders, adminListTrips, adminRiderNames, fmtTime, getTripHistory,
   isCancelled, isTerminal, type Trip, type TripStatus,
+  cancelReasonText, historyReasonText, isPrivateTrip,
 } from "@/services/trips";
 import {
   DISPATCH_STATE_LABEL, EVENT_LABEL, adminDispatchOverview, adminMarkRiderNoShow, adminRedispatch, adminTripDispatch, adminTripParticipants, fmtWait,
@@ -152,7 +153,7 @@ function TripCard({ t, riderName, passengers, dispatch, parts, onChanged }: { t:
       )}
       <p className="mt-2 text-xs text-muted-foreground">
         Confirmed {fmtTime(t.confirmed_at)} · Assigned {fmtTime(t.assigned_at)} · Accepted {fmtTime(t.accepted_at)} · Arriving {fmtTime(t.arriving_at)} · Picked up {fmtTime(t.picked_up_at)} · Started {fmtTime(t.started_at)} · Completed {fmtTime(t.completed_at)}
-        {t.cancelled_at && ` · Cancelled ${fmtTime(t.cancelled_at)} (${t.cancel_reason ?? "no reason"}, was ${t.cancelled_from_status})`}
+        {t.cancelled_at && ` · Cancelled ${fmtTime(t.cancelled_at)} (${cancelReasonText(t) ?? "no reason"}, was ${t.cancelled_from_status})`}
       </p>
       {issues.length > 0 && (
         <div className="mt-2 rounded-md border border-destructive/60 p-2 text-xs">
@@ -209,7 +210,7 @@ function TripCard({ t, riderName, passengers, dispatch, parts, onChanged }: { t:
             <p className="section-label">Status history</p>
             <ol className="mt-2 space-y-1 text-xs">
               {history.data?.map((h) => (
-                <li key={h.id}>{fmtTime(h.created_at)} — {h.from_status ?? "created"} → {h.to_status} by {h.actor_role ?? "system"}{h.reason ? ` · ${h.reason}` : ""}</li>
+                <li key={h.id}>{fmtTime(h.created_at)} — {h.from_status ?? "created"} → {h.to_status} by {h.actor_role ?? "system"}{historyReasonText(h.reason, h.to_status, isPrivateTrip(t)) ? ` · ${historyReasonText(h.reason, h.to_status, isPrivateTrip(t))}` : ""}</li>
               ))}
             </ol>
           </div>
