@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { getMyStudentProfile, submitVerification, validateImage, VERIFICATION_LABEL } from "@/services/student-profile";
+import { getMyRole } from "@/services/roles";
+import { getMyStudentProfile, submitLecturerVerification, submitVerification, validateImage, VERIFICATION_LABEL } from "@/services/student-profile";
 
-type Errors = Partial<Record<"fullName" | "matric" | "faculty" | "avatar" | "idCard" | "form", string>>;
+type Errors = Partial<Record<"fullName" | "matric" | "faculty" | "department" | "phone" | "avatar" | "idCard" | "form", string>>;
 
 export function ImagePicker({ id, label, hint, icon: Icon, file, onChange, error, round }: { id: string; label: string; hint: string; icon: typeof Camera; file: File | null; onChange: (f: File | null) => void; error?: string | undefined; round?: boolean }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -45,6 +46,12 @@ export function VerificationPage() {
   const [fullName, setFullName] = useState("");
   const [matric, setMatric] = useState("");
   const [faculty, setFaculty] = useState("");
+  const [department, setDepartment] = useState("");
+  const [phone, setPhone] = useState("");
+  const [title, setTitle] = useState("");
+  const role = useQuery({ queryKey: ["my-role", user?.id], queryFn: getMyRole, enabled: !!user });
+  const lecturer = role.data === "lecturer";
+  const idLabel = lecturer ? "FUTA staff ID card image" : "FUTA student ID card image";
   const [avatar, setAvatar] = useState<File | null>(null);
   const [idCard, setIdCard] = useState<File | null>(null);
   const [errors, setErrors] = useState<Errors>({});
@@ -54,7 +61,7 @@ export function VerificationPage() {
     const p = profile.data;
     const meta = user?.user_metadata?.["full_name"];
     setFullName((v) => v || p?.full_name || (typeof meta === "string" ? meta : ""));
-    if (p) { setMatric((v) => v || p.matric_number || ""); setFaculty((v) => v || p.faculty || ""); }
+    if (p) { setMatric((v) => v || p.matric_number || ""); setFaculty((v) => v || p.faculty || ""); setDepartment((v) => v || p.department || ""); setPhone((v) => v || p.phone || ""); }
   }, [profile.data, user]);
 
   const status = profile.data?.verification_status;
@@ -64,15 +71,18 @@ export function VerificationPage() {
     event.preventDefault();
     const next: Errors = {};
     if (!fullName.trim()) next.fullName = "Enter your full name.";
-    if (!matric.trim()) next.matric = "Enter your matric number.";
+    if (!matric.trim()) next.matric = lecturer ? "Enter your staff ID." : "Enter your matric number.";
+    if (lecturer && !department.trim()) next.department = "Enter your department.";
+    if (lecturer && !/^\+?[0-9 ]{10,17}$/.test(phone.trim())) next.phone = "Enter a valid phone number.";
     if (!faculty.trim()) next.faculty = "Enter your faculty.";
     const a = validateImage(avatar, "avatar"); if (a) next.avatar = a;
-    const c = validateImage(idCard, "idCard"); if (c) next.idCard = c;
+    const c = validateImage(idCard, "idCard", idLabel); if (c) next.idCard = c;
     setErrors(next);
     if (Object.keys(next).length || !avatar || !idCard) return;
     setLoading(true);
     try {
-      await submitVerification({ fullName, matricNumber: matric, faculty, avatar, idCard });
+      if (lecturer) await submitLecturerVerification({ fullName, staffId: matric, faculty, department, phone, academicTitle: title, avatar, idCard });
+      else await submitVerification({ fullName, matricNumber: matric, faculty, avatar, idCard });
       await qc.invalidateQueries({ queryKey: ["student-profile"] });
       await navigate({ to: "/student/home" });
     } catch (e) {
@@ -89,8 +99,8 @@ export function VerificationPage() {
         </div>
         <div className="mb-7 grid size-12 place-items-center rounded-full bg-brand/15 text-brand-strong"><ShieldCheck className="size-6" strokeWidth={1.75} /></div>
         <div className="mb-8">
-          <h1 className="display-title text-[2rem]">Verify your FUTA identity</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">A FUTAMOVE administrator reviews every submission. Only verified students are matched into shared rides.</p>
+          <h1 className="display-title text-[2rem]">{lecturer ? "Verify your FUTA staff identity" : "Verify your FUTA identity"}</h1>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">A FUTAMOVE administrator reviews every submission. Only verified students and lecturers are matched into shared rides.</p>
         </div>
 
         {!authLoading && !user && <p className="rounded-card border border-border p-4 text-sm">Please <Link to="/login" className="font-semibold underline">sign in</Link> to submit verification.</p>}
@@ -113,15 +123,20 @@ export function VerificationPage() {
             <div className="space-y-5">
               <ImagePicker id="avatar" label="Profile photo" hint="A clear photo of your face" icon={Camera} file={avatar} onChange={setAvatar} error={errors.avatar} round />
               <div><Label htmlFor="fullName" className="text-[0.8125rem] font-medium">Full name</Label><Input id="fullName" className="mt-2" value={fullName} aria-invalid={!!errors.fullName} onChange={(e) => setFullName(e.target.value)} />{errors.fullName && <FieldError>{errors.fullName}</FieldError>}</div>
-              <div><Label htmlFor="matric" className="text-[0.8125rem] font-medium">Matric number</Label><Input id="matric" placeholder="e.g. MEE/20/0000" className="mt-2" value={matric} aria-invalid={!!errors.matric} onChange={(e) => setMatric(e.target.value)} />{errors.matric && <FieldError>{errors.matric}</FieldError>}</div>
-              <div><Label htmlFor="faculty" className="text-[0.8125rem] font-medium">Faculty</Label><Input id="faculty" placeholder="Your faculty" className="mt-2" value={faculty} aria-invalid={!!errors.faculty} onChange={(e) => setFaculty(e.target.value)} />{errors.faculty && <FieldError>{errors.faculty}</FieldError>}</div>
-              <ImagePicker id="idCard" label="FUTA student ID card" hint="Photo of the front of your ID card" icon={IdCard} file={idCard} onChange={setIdCard} error={errors.idCard} />
+              <div><Label htmlFor="matric" className="text-[0.8125rem] font-medium">{lecturer ? "Staff ID" : "Matric number"}</Label><Input id="matric" placeholder={lecturer ? "Your FUTA staff ID" : "e.g. MEE/20/0000"} className="mt-2" value={matric} aria-invalid={!!errors.matric} onChange={(e) => setMatric(e.target.value)} />{errors.matric && <FieldError>{errors.matric}</FieldError>}</div>
+              <div><Label htmlFor="faculty" className="text-[0.8125rem] font-medium">{lecturer ? "Faculty/School" : "Faculty"}</Label><Input id="faculty" placeholder={lecturer ? "e.g. School of Computing" : "Your faculty"} className="mt-2" value={faculty} aria-invalid={!!errors.faculty} onChange={(e) => setFaculty(e.target.value)} />{errors.faculty && <FieldError>{errors.faculty}</FieldError>}</div>
+              {lecturer && <>
+                <div><Label htmlFor="department" className="text-[0.8125rem] font-medium">Department</Label><Input id="department" className="mt-2" value={department} aria-invalid={!!errors.department} onChange={(e) => setDepartment(e.target.value)} />{errors.department && <FieldError>{errors.department}</FieldError>}</div>
+                <div><Label htmlFor="phone" className="text-[0.8125rem] font-medium">Phone number</Label><Input id="phone" type="tel" autoComplete="tel" placeholder="e.g. 0803 000 0000" className="mt-2" value={phone} aria-invalid={!!errors.phone} onChange={(e) => setPhone(e.target.value)} />{errors.phone && <FieldError>{errors.phone}</FieldError>}</div>
+                <div><Label htmlFor="title" className="text-[0.8125rem] font-medium">Academic title (optional)</Label><Input id="title" placeholder="e.g. Dr., Prof." className="mt-2" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+              </>}
+              <ImagePicker id="idCard" label={lecturer ? "FUTA staff ID card" : "FUTA student ID card"} hint="Photo of the front of your ID card" icon={IdCard} file={idCard} onChange={setIdCard} error={errors.idCard} />
             </div>
             {errors.form && <p role="alert" className="mt-5 rounded-card border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">{errors.form}</p>}
             <Button type="submit" size="lg" className="mt-8 w-full" disabled={loading}>{loading ? "Uploading securely…" : status === "rejected" ? "Resubmit for verification" : "Submit for verification"}</Button>
           </form>
         )}
-        <div className="mt-6"><TrustNote>Your ID card is stored privately and is only visible to you and FUTAMOVE verification staff.</TrustNote></div>
+        <div className="mt-6"><TrustNote>Your ID card and phone number are stored privately and is only visible to you and FUTAMOVE verification staff.</TrustNote></div>
         <div className="mt-6 flex justify-center"><Brand compact /></div>
       </div>
     </main>
