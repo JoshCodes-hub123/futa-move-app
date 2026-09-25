@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -45,7 +46,7 @@ export async function createRideRequest(draft: RideRequestDraft): Promise<RideRe
 
   if (error || !data) {
     throw new RideRequestError(
-      error?.message ? `We couldn't create your ride request. ${error.message}` : "We couldn't create your ride request.",
+      error?.message ? `We couldn't create your ride request. ${friendlyMessage(friendlyMessage(error.message))}` : "We couldn't create your ride request.",
     );
   }
   return data;
@@ -56,13 +57,13 @@ export async function listRideRequests(): Promise<RideRequest[]> {
     .from("ride_requests")
     .select("*")
     .order("created_at", { ascending: false });
-  if (error) throw new RideRequestError(error.message);
+  if (error) throw new RideRequestError(friendlyMessage(error.message));
   return data ?? [];
 }
 
 export async function getRideRequest(id: string): Promise<RideRequest | null> {
   const { data, error } = await supabase.from("ride_requests").select("*").eq("id", id).maybeSingle();
-  if (error) throw new RideRequestError(error.message);
+  if (error) throw new RideRequestError(friendlyMessage(error.message));
   return data;
 }
 

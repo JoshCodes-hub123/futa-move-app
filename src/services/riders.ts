@@ -1,3 +1,4 @@
+import { friendlyMessage } from "@/lib/friendly-error";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables } from "@/integrations/supabase/types";
 
@@ -25,7 +26,7 @@ export async function getMyRiderApplication(): Promise<RiderApplication | null> 
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return null;
   const { data, error } = await supabase.from("rider_applications").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data;
 }
 
@@ -33,7 +34,7 @@ async function upload(userId: string, file: File, kind: string) {
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `${userId}/${kind}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const { error } = await supabase.storage.from("rider-documents").upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw new Error(`Upload failed. ${error.message}`);
+  if (error) throw new Error(`Upload failed. ${friendlyMessage(friendlyMessage(error.message))}`);
   return path;
 }
 
@@ -54,7 +55,7 @@ export async function submitRiderApplication(input: RiderApplicationInput): Prom
     p_id_type: input.idType, p_id_number: input.idNumber, p_id_document_path: idPath as string,
     p_vehicle_description: input.vehicleDescription, p_plate_number: input.plateNumber, p_vehicle_photo_path: vehiclePath as string,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
 }
 
 export async function riderDocumentUrl(path: string | null | undefined, seconds = 300) {
@@ -66,11 +67,11 @@ export async function riderDocumentUrl(path: string | null | undefined, seconds 
 // ===== Admin =====
 export async function adminListRiderApplications(): Promise<AdminRiderApplication[]> {
   const { data, error } = await supabase.rpc("admin_list_rider_applications");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
   return data ?? [];
 }
 
 export async function reviewRiderApplication(id: string, action: "approve" | "reject" | "suspend" | "restore", reason?: string) {
   const { error } = await supabase.rpc("review_rider_application", { p_application_id: id, p_action: action, p_reason: reason ?? "" });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyMessage(error.message));
 }
