@@ -6,7 +6,7 @@ import { passengerReportRiderLate } from "@/services/trips";
 import { IMPROVE_TAGS, POSITIVE_TAGS, confirmCompletion, confirmPickup, getTripRiderProfile, rateRider, ratingText } from "@/services/ratings";
 
 /** Rider card, pickup confirmation and post-ride rating for a passenger. All rules are enforced by the database. */
-export function TripRiderCard({ tripId, status }: { tripId: string; status: string }) {
+export function TripRiderCard({ tripId, status, departure }: { tripId: string; status: string; departure?: string | null }) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["trip-rider", tripId, status], queryFn: () => getTripRiderProfile(tripId), refetchInterval: 10000 });
   const refresh = async () => { await qc.invalidateQueries({ queryKey: ["trip-rider", tripId] }); await qc.invalidateQueries({ queryKey: ["ride-group"] }); await qc.invalidateQueries({ queryKey: ["my-group-trips"] }); };
@@ -99,7 +99,7 @@ export function TripRiderCard({ tripId, status }: { tripId: string; status: stri
           )}
         </div>
       )}
-      {(status === "assigned" || status === "accepted" || status === "arriving") && <RiderLateReport tripId={tripId} departure={p.departure_time} />}
+      {(status === "assigned" || status === "accepted" || status === "arriving") && <RiderLateReport tripId={tripId} departure={departure} />}
     </section>
   );
 }

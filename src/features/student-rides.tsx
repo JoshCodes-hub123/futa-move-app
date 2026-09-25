@@ -627,7 +627,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
         <RouteSummary origin={t.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
       </div>
       {g.meeting_point_note && <p className="mt-3 text-xs text-muted-foreground">Meeting point note: {g.meeting_point_note}</p>}
-      {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} />}
+      {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} departure={g.departure_time} />}
       {t.status === "confirmed" && !t.rider && <AvailableRiders tripId={t.id} />}
       {!cancelled && (
         <ol className="mt-8 space-y-3">

@@ -107,6 +107,7 @@ export const EVENT_LABEL: Record<string, string> = {
   OFFER_TIMED_OUT: "Offer timed out", OFFER_CANCELLED: "Offer cancelled", RIDER_ASSIGNED: "Rider assigned", RIDER_REASSIGNED: "Rider reassigned",
   RIDER_SELF_ACCEPTED: "Rider accepted from waiting list", RIDER_WITHDREW: "Rider withdrew", RIDER_NO_SHOW: "Rider no-show",
   STUDENT_SELECTED_RIDER: "Passenger chose this rider", ASSIGNMENT_ACCEPTED: "Assignment accepted", ASSIGNMENT_DECLINED: "Assignment declined", DISPATCH_ESCALATED: "Escalated to admin", DISPATCH_RESTARTED: "Dispatch restarted",
+  PASSENGER_NO_SHOW: "Rider reported passenger no-show", RIDER_LATE_REPORTED: "Passenger reported rider hasn't arrived", ADMIN_COMPLETED: "Admin completed the ride",
 };
 export function fmtWait(sec: number) {
   if (sec < 60) return `${sec}s`;
