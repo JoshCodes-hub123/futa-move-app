@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyMessage } from "@/lib/friendly-error";
 import type { Tables } from "@/integrations/supabase/types";
 
 /** Every status change happens inside database functions; the browser only asks. */
@@ -64,7 +65,7 @@ export function friendlyTripError(message: string) {
   if (message.includes("NOT_AUTHORIZED_TO_CHANGE_TRIP_STATUS") || /permission denied/i.test(message)) {
     return "You're not allowed to change this ride. Use the buttons on this screen instead.";
   }
-  return message;
+  return friendlyMessage(message);
 }
 function fail(error: { message: string } | null): asserts error is null {
   if (error) throw new TripError(friendlyTripError(error.message));
