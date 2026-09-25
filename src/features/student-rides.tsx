@@ -20,6 +20,7 @@ import {
 } from "@/services/ride-requests";
 import { confirmRide, isCancelled, isTerminal, listMyGroupTrips, studentTripLabel, type TripStatus } from "@/services/trips";
 import { GroupChat } from "@/features/group-chat";
+import { TripRiderCard } from "@/features/trip-rider-card";
 import { pingDispatch } from "@/services/dispatch";
 import { KEKE_CAPACITY, addGroupMember, confirmMeetingPoint, getRideGroup, leaveRideGroup, matchRideRequest, setMeetingPoint, type RideGroup } from "@/services/ride-groups";
 
@@ -609,7 +610,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
               : t.status === "arriving"
                 ? "Your rider is heading to the meeting point now."
                 : t.status === "picked_up"
-                  ? "You've been picked up."
+                  ? "Your rider has arrived. Confirm once you're in the keke."
                   : t.status === "in_progress"
                     ? "Enjoy the ride."
                     : "You've arrived. Thanks for riding with FUTAMOVE."}
@@ -625,13 +626,7 @@ function StudentTripPanel({ g }: { g: RideGroup }) {
         <RouteSummary origin={t.meeting_point_text} destination={g.destination_text} departure={g.departure_time} />
       </div>
       {g.meeting_point_note && <p className="mt-3 text-xs text-muted-foreground">Meeting point note: {g.meeting_point_note}</p>}
-      {t.rider && (
-        <section className="mt-6 surface-panel p-4">
-          <p className="section-label">Your rider</p>
-          <p className="mt-2 text-sm font-semibold">{t.rider.first_name}</p>
-          <p className="text-xs text-muted-foreground">{t.rider.vehicle}{t.rider.plate ? ` · ${t.rider.plate}` : ""}</p>
-        </section>
-      )}
+      {t.rider && !cancelled && <TripRiderCard tripId={t.id} status={t.status} />}
       {!cancelled && (
         <ol className="mt-8 space-y-3">
           {STUDENT_STEPS.map((s) => {

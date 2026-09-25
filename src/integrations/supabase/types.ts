@@ -593,6 +593,44 @@ export type Database = {
         }
         Relationships: []
       }
+      rider_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rider_id: string
+          stars: number
+          student_id: string
+          tags: string[]
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rider_id: string
+          stars: number
+          student_id: string
+          tags?: string[]
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rider_id?: string
+          stars?: number
+          student_id?: string
+          tags?: string[]
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rider_ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_profiles: {
         Row: {
           avatar_path: string | null
@@ -642,6 +680,44 @@ export type Database = {
             columns: ["current_submission_id"]
             isOneToOne: false
             referencedRelation: "verification_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_confirmations: {
+        Row: {
+          confirmation_type: string
+          created_at: string
+          id: string
+          role: string
+          trip_id: string
+          trip_status: string
+          user_id: string
+        }
+        Insert: {
+          confirmation_type: string
+          created_at?: string
+          id?: string
+          role: string
+          trip_id: string
+          trip_status: string
+          user_id: string
+        }
+        Update: {
+          confirmation_type?: string
+          created_at?: string
+          id?: string
+          role?: string
+          trip_id?: string
+          trip_status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_confirmations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -972,6 +1048,7 @@ export type Database = {
         }
         Returns: string
       }
+      can_view_rider_photo: { Args: { _path: string }; Returns: boolean }
       claim_student_role: { Args: never; Returns: string }
       confirm_meeting_point: {
         Args: { p_group_id: string; p_version?: number }
@@ -1056,6 +1133,7 @@ export type Database = {
       match_ride_request: { Args: { p_request_id: string }; Returns: Json }
       match_time_tolerance: { Args: never; Returns: string }
       normalize_place: { Args: { _t: string }; Returns: string }
+      passenger_confirm_pickup: { Args: { p_trip_id: string }; Returns: Json }
       pick_compatible_requests: {
         Args: {
           _exclude: string[]
@@ -1079,6 +1157,10 @@ export type Database = {
           radius_m: number
         }
         Returns: boolean
+      }
+      rate_rider: {
+        Args: { p_stars: number; p_tags: string[]; p_trip_id: string }
+        Returns: undefined
       }
       refresh_group_status: { Args: { _group_id: string }; Returns: undefined }
       reject_location_suggestion: {
@@ -1213,6 +1295,11 @@ export type Database = {
         Returns: string
       }
       trip_is_terminal: { Args: { _s: string }; Returns: boolean }
+      trip_rider_profile: { Args: { p_trip_id: string }; Returns: Json }
+      try_start_trip: {
+        Args: { _role: string; _trip: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "student" | "rider"

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatDepartureTime } from "@/services/ride-requests";
+import { riderConfirmedStart } from "@/services/ratings";
 import { getMyAvailability, listMyOffers, respondOffer, setMyAvailability, shareMyLocation, type Availability, type RideOffer } from "@/services/dispatch";
 import {
   ACTIVE_TRIP_STATUSES, advanceTrip, claimTrip, isCancelled, listAvailableTrips, listMyRiderTrips, respondAssignment, withdrawTrip,
@@ -53,7 +54,8 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
     picked_up: { to: "in_progress", label: "Start ride" },
     in_progress: { to: "completed", label: "Complete ride" },
   };
-  const step = next[s];
+  const confirmed = useQuery({ queryKey: ["rider-start-confirmed", trip.id, s], queryFn: () => riderConfirmedStart(trip.id), enabled: s === "picked_up", refetchInterval: 8000 });
+  const step = s === "picked_up" && confirmed.data ? undefined : next[s];
   return (
     <section className="mt-8 surface-panel p-5">
       <div className="flex items-center justify-between">
@@ -72,6 +74,7 @@ function CurrentTrip({ trip, onDone }: { trip: Trip; onDone: () => Promise<void>
           </>
         )}
         {step && <Button size="lg" onClick={() => act.mutate(step.to)} disabled={act.isPending}>{act.isPending && <Loader2 className="animate-spin" />}{step.label}</Button>}
+        {s === "picked_up" && confirmed.data && <p className="text-sm text-muted-foreground">You confirmed pickup. The ride starts as soon as one passenger confirms in the app.</p>}
         {(s === "accepted" || s === "arriving") && (withdrawing ? (
           <>
             <Input placeholder="Why can't you take this ride?" value={reason} onChange={(e) => setReason(e.target.value)} />

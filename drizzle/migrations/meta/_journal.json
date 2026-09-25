@@ -78,6 +78,13 @@
       "when": 1790289673673,
       "tag": "0010_pairing_chat_proximity_cancel_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790295321350,
+      "tag": "0011_mutual_start_and_ratings",
+      "breakpoints": true
     }
   ]
 }
