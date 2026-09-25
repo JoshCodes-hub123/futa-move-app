@@ -21,3 +21,4 @@
 - [x] Stage 2: lecturer registration, verification, mixed rides
 - [ ] Stage 2 real-account browser test (waiting on user)
 - [ ] Stage 3: student "see available riders" fallback (waiting for go-ahead)
+- [x] Phase 5 hardening: function permissions, plain-language errors, refresh after failed actions (signed-in browser regression blocked: no test session)
